@@ -1,0 +1,34 @@
+# Node modules
+node_modules/
+
+# Compiled TypeScript
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# TypeScript cache
+*.tsbuildinfo
+
+# IDE/editor configs
+.vscode/
+.idea/
+
+# TypeORM CLI migrations (si generas archivos de manera temporal)
+*.sqlite
+*.sqlite3
+
+# Optional: Ignore test coverage reports
+coverage/
