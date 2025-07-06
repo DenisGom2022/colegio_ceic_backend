@@ -1,6 +1,8 @@
 // src/data-source.ts
 import "reflect-metadata";
 import { DataSource } from "typeorm";
+import { TipoUsuario } from "../models/TipoUsuario";
+import { Usuario } from "../models/Usuario";
 
 export const AppDataSource = new DataSource({
   type: "mysql", // o postgres/sqlite
@@ -10,8 +12,8 @@ export const AppDataSource = new DataSource({
   password: "",
   database: "colegio_ceic",
   synchronize: false,
-  logging: false,
-  entities: [],
+  logging: true,
+  entities: ["src/models/*.ts"],
   migrations: ["src/migration/*.ts"],
   subscribers: [],
 });

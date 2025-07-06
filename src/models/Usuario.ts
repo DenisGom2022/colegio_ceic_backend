@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, OneToMany } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, UpdateDateColumn } from "typeorm";
 import { TipoUsuario } from "./TipoUsuario";
 
 @Entity("usuario")
@@ -30,36 +30,17 @@ export class Usuario extends BaseEntity {
     @Column({ name: "telefono", type: "nvarchar", length: 20, nullable: true })
     telefono: string;
 
-    @Column({ name: "created_at", type: "timestamp", default: () => "CURRENT_TIMESTAMP", nullable: false })
+    @CreateDateColumn({ name: "created_at", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     createdAt: Date;
 
-    @Column({ name: "updated_at", type: "timestamp", nullable: false })
+    @UpdateDateColumn({ name: "updated_at", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     updatedAt: Date;
 
-    @OneToMany(() => TipoUsuario, tipoUsuario => tipoUsuario.id, { eager: true })
-    tipoUsuario: TipoUsuario;
+    @DeleteDateColumn({ name: "deleted_at", type: "timestamp", nullable: true })
+    deletedAt: Date;
 
-    constructor(
-        usuario: string,
-        contrasena: string,
-        primerNombre: string,
-        segundoNombre: string,
-        tercerNombre: string,
-        primerApellido: string,
-        segundoApellido: string,
-        idTipoUsuario: number,
-        telefono: string
-    ) {
-        super();
-        this.usuario = usuario;
-        this.contrasena = contrasena;
-        this.primerNombre = primerNombre;
-        this.segundoNombre = segundoNombre;
-        this.tercerNombre = tercerNombre;
-        this.primerApellido = primerApellido;
-        this.segundoApellido = segundoApellido;
-        this.idTipoUsuario = idTipoUsuario;
-        this.telefono = telefono;
-    }
+    @ManyToOne(() => TipoUsuario, tipoUsuario => tipoUsuario.id, { eager: true })
+    @JoinColumn({ name: "id_tipo_usuario" }) 
+    tipoUsuario: TipoUsuario;
 
 }
