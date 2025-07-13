@@ -6,7 +6,7 @@ export class Usuario extends BaseEntity {
     @Column({ name: "usuario", primary: true, type: "nvarchar", length: 50 })
     usuario: string;
 
-    @Column({ name: "contrasena", type: "nvarchar", length: 255 })
+    @Column({ name: "contrasena", type: "nvarchar", length: 255})
     contrasena: string;
 
     @Column({ name: "primer_nombre", type: "nvarchar", length: 50, nullable: false })
@@ -42,5 +42,4 @@ export class Usuario extends BaseEntity {
     @ManyToOne(() => TipoUsuario, tipoUsuario => tipoUsuario.id, { eager: true })
     @JoinColumn({ name: "id_tipo_usuario" }) 
     tipoUsuario: TipoUsuario;
-
 }
