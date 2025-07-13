@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Usuario } from "../models/Usuario";
 import { EntityNotFoundError } from "typeorm";
 import * as bcrypt from "bcryptjs";
+import { generateToken } from "../utils/jwt";
 
 export const login = async (req: Request, res: Response): Promise<any> => {
     try {
@@ -19,9 +20,14 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
         // Exclude password from user object
         const { contrasena, ...userWithoutPassword } = user;
+        const token = generateToken({
+            usuario: user.usuario,
+            role: user.idTipoUsuario
+        })
 
         res.status(200).json({
             message: "Login successful",
+            token,
             user: userWithoutPassword
         }); 
 
