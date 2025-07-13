@@ -5,7 +5,7 @@ import * as bcrypt from "bcryptjs";
 export const getAllUsuarios = async (req: Request, res: Response) => {
     try {
         const usuarios = await findUsers();
-        res.status(200).json(usuarios);
+        res.status(200).json({message: "usuarios encontrados", usuarios});
     } catch (error) {
         console.error("Error fetching usuarios:", error);
         res.status(500).json({ message: "Internal server error" });
@@ -28,6 +28,7 @@ const findUsers = async () => {
                 id: true,
                 descripcion: true,
             },
+            cambiarContrasena: true,
         },
     });
 };
@@ -54,7 +55,8 @@ export const crearUsuario = async (req: Request, resp: Response) => {
             primerApellido,
             segundoApellido,
             telefono,
-            idTipoUsuario
+            idTipoUsuario,
+            cambiarContrasena: 1, // Asignar valor por defecto para cambiarContrasena
         });
 
         await newUser.save();

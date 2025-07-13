@@ -61,7 +61,7 @@ export class CreateUsuarioTable1751775948111 implements MigrationInterface {
                     },
                     {
                         name:"cambar_contrasena",
-                        type: "bigint",
+                        type: "smallint",
                         isNullable: true,
                         default: 0
                     },

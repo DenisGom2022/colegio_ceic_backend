@@ -7,6 +7,7 @@ import { JwtPayload } from "../interfaces/interfaces";
 
 export const login = async (req: Request, res: Response): Promise<any> => {
     try {
+        let message = "Login successful";
         const { username, password } = req.body;
         const user = await Usuario.findOneOrFail({
             where: {
@@ -27,10 +28,14 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             role: user.idTipoUsuario
         };
 
+        if( user.cambiarContrasena == 1) {
+            message = "Debe cambiar su contraseña";
+        }
+
         const token = generateToken(jwtPayload)
 
         res.status(200).json({
-            message: "Login successful",
+            message,
             token,
             user: userWithoutPassword
         }); 
