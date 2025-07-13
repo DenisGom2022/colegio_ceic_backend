@@ -3,6 +3,7 @@ import { Usuario } from "../models/Usuario";
 import { EntityNotFoundError } from "typeorm";
 import * as bcrypt from "bcryptjs";
 import { generateToken } from "../utils/jwt";
+import { JwtPayload } from "../interfaces/interfaces";
 
 export const login = async (req: Request, res: Response): Promise<any> => {
     try {
@@ -20,10 +21,13 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
         // Exclude password from user object
         const { contrasena, ...userWithoutPassword } = user;
-        const token = generateToken({
+
+        const jwtPayload:JwtPayload = {
             usuario: user.usuario,
             role: user.idTipoUsuario
-        })
+        };
+
+        const token = generateToken(jwtPayload)
 
         res.status(200).json({
             message: "Login successful",

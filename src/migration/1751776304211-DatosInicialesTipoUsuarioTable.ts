@@ -15,5 +15,4 @@ export class DatosInicialesTipoUsuarioTable1751776304211 implements MigrationInt
             DELETE FROM cat_tipo_usuario WHERE id IN (1, 2)
         `);
     }
-
 }
