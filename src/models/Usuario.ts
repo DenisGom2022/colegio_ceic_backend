@@ -29,6 +29,9 @@ export class Usuario extends BaseEntity {
 
     @Column({ name: "telefono", type: "nvarchar", length: 20, nullable: true })
     telefono: string;
+    
+    @Column({ name: "cambar_contrasena", type: "bigint", nullable: true })
+    cambiarContrasena: number;
 
     @CreateDateColumn({ name: "created_at", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     createdAt: Date;

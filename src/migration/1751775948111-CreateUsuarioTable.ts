@@ -60,6 +60,12 @@ export class CreateUsuarioTable1751775948111 implements MigrationInterface {
                         isNullable: true
                     },
                     {
+                        name:"cambar_contrasena",
+                        type: "bigint",
+                        isNullable: true,
+                        default: 0
+                    },
+                    {
                         name:"created_at",
                         type: "timestamp",
                         default: "CURRENT_TIMESTAMP",
