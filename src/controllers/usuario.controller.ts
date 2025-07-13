@@ -36,6 +36,12 @@ export const crearUsuario = async (req: Request, resp: Response) => {
     try {
         const { usuario, contrasena, primerNombre, segundoNombre, tercerNombre, primerApellido, segundoApellido, telefono, idTipoUsuario } = req.body;
 
+        // Verificar si el usuario ya existe
+        const existingUser = await Usuario.findOne({ where: { usuario } });
+        if (existingUser) {
+            return resp.status(400).json({ message: "El usuario ya existe" });
+        }
+
         // Encriptar la contraseña antes de guardar
         const hashedPassword = await bcrypt.hash(contrasena, 10);
 
