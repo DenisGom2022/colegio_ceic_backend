@@ -3,14 +3,16 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { TipoUsuario } from "../models/TipoUsuario";
 import { Usuario } from "../models/Usuario";
+import { environments } from "../utils/environments";
+import { env } from "process";
 
 export const AppDataSource = new DataSource({
   type: "mysql", // o postgres/sqlite
-  host: "localhost",
-  port: 3306,
-  username: "root",
-  password: "",
-  database: "colegio_ceic",
+  host: environments.DB_HOST,
+  port: environments.DB_PORT,
+  username: environments.DB_USERNAME,
+  password: environments.DB_PASSWORD,
+  database: environments.DB_DATABASE,
   synchronize: false,
   logging: true,
   entities: ["src/models/*.ts"],
