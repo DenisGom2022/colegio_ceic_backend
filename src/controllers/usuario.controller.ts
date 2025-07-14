@@ -1,7 +1,7 @@
 import { Usuario } from "../models/Usuario";
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import * as bcrypt from "bcryptjs";
-import { EntityNotFoundError } from "typeorm";
+import { EntityNotFoundError, QueryFailedError } from "typeorm";
 
 export const getAllUsuarios = async (req: Request, res: Response) => {
     try {
@@ -67,12 +67,20 @@ export const crearUsuario = async (req: Request, resp: Response): Promise<any> =
             user: newUser
         });
     } catch (error) {
+        if (error instanceof QueryFailedError) {
+            const { errno, sqlMessage } = error.driverError || {};
+            if (errno === 1452 && sqlMessage?.includes("cat_tipo_usuario")) {
+            return resp.status(400).json({ message: "Error tipo de usuario no existe" });
+            }
+            return resp.status(500).json({ message: "Error en BD al modificar usuario" });
+        }
+
         console.error("Error creating usuario:", error);
         resp.status(500).json({ message: "Internal server error" });
     }
 }
 
-export const cambiarContrasena = async (req: Request, res: Response):Promise<any> => {
+export const cambiarContrasena = async (req: Request, res: Response): Promise<any> => {
     try {
         const { usuario, contrasenaActual, contrasenaNueva, contrasenaNueva2 } = req.body;
         if (contrasenaNueva != contrasenaNueva2) return res.status(400).send({ message: "Contraseñas no coinciden" });
@@ -92,7 +100,7 @@ export const cambiarContrasena = async (req: Request, res: Response):Promise<any
         user.cambiarContrasena = 0;
 
         await user.save();
- 
+
         return res.send({ message: "Contraseña realizada con exito realizado con éxito" });
     } catch (error) {
         if (error instanceof EntityNotFoundError) {
@@ -102,3 +110,64 @@ export const cambiarContrasena = async (req: Request, res: Response):Promise<any
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const modificarUsuario = async (req: Request, resp: Response): Promise<any> => {
+    try {
+        const { usuario, primerNombre, segundoNombre, tercerNombre, primerApellido, segundoApellido, telefono, idTipoUsuario } = req.body;
+
+        // Verificar si el usuario ya existe
+        const existingUser = await Usuario.findOneOrFail({ where: { usuario } });
+
+        existingUser.primerNombre = primerNombre;
+        existingUser.segundoApellido = segundoNombre;
+        existingUser.tercerNombre = tercerNombre;
+        existingUser.primerApellido = primerApellido;
+        existingUser.segundoApellido = segundoApellido;
+        existingUser.telefono = telefono;
+        existingUser.idTipoUsuario = idTipoUsuario;
+        if (existingUser.tipoUsuario) {
+            existingUser.tipoUsuario.id = idTipoUsuario;
+        }
+
+
+        await existingUser.save();
+
+        resp.status(200).json({
+            message: "Usuario modificado exitosamente"
+        });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            return resp.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        if (error instanceof QueryFailedError) {
+            const { errno, sqlMessage } = error.driverError || {};
+            if (errno === 1452 && sqlMessage?.includes("cat_tipo_usuario")) return resp.status(400).json({ message: "Error tipo de usuario no existe" });
+            return resp.status(500).json({ message: "Error en BD al modificar usuario" });
+        }
+        console.error("Error modificando usuario:", error);
+        return resp.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const getUsuario = async (req: Request, resp: Response): Promise<any> => {
+    try {
+        const { usuario } = req.params;
+
+        // Verificar si el usuario ya existe
+        const existingUser = await Usuario.findOneOrFail({ where: { usuario } });
+
+        const { contrasena, ...userWithoutPassword } = existingUser;
+
+        resp.status(200).json({
+            message: "Usuario encontrado exitosamente",
+            user: userWithoutPassword
+        });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            return resp.status(404).json({ message: "Usuario no encontrado" });
+        }
+        console.error("Error creating usuario:", error);
+        resp.status(500).json({ message: "Internal server error" });
+    }
+} 
