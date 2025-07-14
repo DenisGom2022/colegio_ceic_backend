@@ -29,3 +29,18 @@ export const usuarioValidator = [
         .isNumeric().withMessage('El tipo de usuario debe ser numérico')
         .notEmpty().withMessage('El tipo de usuario es requerido'),
 ];
+
+export const cambiaContrasenaValidator = [
+    body("usuario")
+        .notEmpty().withMessage('El usuario es requerido')
+        .isString().withMessage('El usuario debe ser una cadena de texto'),
+    body("contrasenaActual")
+        .notEmpty().withMessage('El contraseña actual es requerida')
+        .isString().withMessage('El contraseña actual debe ser una cadena de texto'),
+    body("contrasenaNueva")
+        .notEmpty().withMessage('El nueva contraseña es requerida')
+        .isString().withMessage('El nueva contraseña debe ser una cadena de texto'),
+    body("contrasenaNueva2")
+        .notEmpty().withMessage('El confirmacion de nueva contraseña es requerida')
+        .isString().withMessage('El confirmacion de nueva contraseña debe ser una cadena de texto')
+]

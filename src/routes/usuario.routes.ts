@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { crearUsuario, getAllUsuarios } from "../controllers/usuario.controller";
-import { usuarioValidator } from "../validators/usuario.validator";
+import { cambiarContrasena, crearUsuario, getAllUsuarios } from "../controllers/usuario.controller";
+import { cambiaContrasenaValidator, usuarioValidator } from "../validators/usuario.validator";
 import { validarDatos } from "../middlewares/validator.middleware";
 import { authWithRoles } from "../middlewares/auth.middleware";
 
@@ -11,6 +11,6 @@ export const ROLES = {
     DOCENTE: 2,
 };
 
-usuarioRoute.use(authWithRoles([ROLES.ADMIN]));
-usuarioRoute.get("/",  getAllUsuarios);
-usuarioRoute.post("/", usuarioValidator, validarDatos,  crearUsuario);
+usuarioRoute.get("/", authWithRoles([ROLES.ADMIN]), getAllUsuarios);
+usuarioRoute.post("/", authWithRoles([ROLES.ADMIN]), usuarioValidator, validarDatos,  crearUsuario);
+usuarioRoute.patch("/cambiarContrasena", cambiaContrasenaValidator, validarDatos, cambiarContrasena);

@@ -28,16 +28,23 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             role: user.idTipoUsuario
         };
 
+        let cambiarContrasena = false;
+
         if( user.cambiarContrasena == 1) {
             message = "Debe cambiar su contraseña";
+            cambiarContrasena = true;
         }
 
-        const token = generateToken(jwtPayload)
+        let token = "";
+        if(!cambiarContrasena){
+            token = generateToken(jwtPayload)
+        }
 
         res.status(200).json({
             message,
             token,
-            user: userWithoutPassword
+            user: userWithoutPassword,
+            cambiarContrasena
         }); 
 
     } catch (error) {

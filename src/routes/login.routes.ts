@@ -1,4 +1,3 @@
-import { log } from "console";
 import { Router } from "express";
 import { login } from "../controllers/login.controller";
 import { loginValidator } from "../validators/login.validator";
