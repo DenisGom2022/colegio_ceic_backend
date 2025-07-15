@@ -10,8 +10,8 @@ export class Catedratico extends BaseEntity {
     @Index("IDX_UNIQUE_ID_USUARIO", {unique: true})
     idUsuario: string;
 
-    @OneToOne(() => Usuario, usuario => usuario.usuario)
-    @JoinColumn()
+    @OneToOne(() => Usuario, usuario => usuario.usuario, { eager: true })
+    @JoinColumn({ name:"id_usuario" })
     usuario:Usuario;
 
     @CreateDateColumn({ name:"created_at", type: "timestamp" })
