@@ -39,7 +39,8 @@ export class CreateCatedraticoTable1752591175732 implements MigrationInterface {
                         referencedTableName: "usuario",
                         referencedColumnNames: ["usuario"],
                         onDelete: "CASCADE",
-                        onUpdate: "CASCADE"
+                        onUpdate: "CASCADE",
+                        name: "FK_id_usuario"
                     }
                 ]
             })
