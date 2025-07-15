@@ -16,6 +16,21 @@ export class CreateCatedraticoTable1752591175732 implements MigrationInterface {
                         name: "id_usuario",
                         type: "nvarchar",
                         length: "50",
+                    },                    
+                    {
+                        name: "created_at",
+                        type: "timestamp",
+                        default: () => "CURRENT_TIMESTAMP"
+                    },
+                    {
+                        name: "updated_at",
+                        type: "timestamp",
+                        default: () => "CURRENT_TIMESTAMP"
+                    },
+                    {
+                        name:"deleted_at",
+                        type: "timestamp",
+                        isNullable: true
                     }
                 ],
                 foreignKeys: [
