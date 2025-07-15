@@ -20,12 +20,12 @@ export class CreateCatedraticoTable1752591175732 implements MigrationInterface {
                     {
                         name: "created_at",
                         type: "timestamp",
-                        default: () => "CURRENT_TIMESTAMP"
+                        default: "CURRENT_TIMESTAMP"
                     },
                     {
                         name: "updated_at",
                         type: "timestamp",
-                        default: () => "CURRENT_TIMESTAMP"
+                        default: "CURRENT_TIMESTAMP"
                     },
                     {
                         name:"deleted_at",
