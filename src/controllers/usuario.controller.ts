@@ -171,3 +171,30 @@ export const getUsuario = async (req: Request, resp: Response): Promise<any> => 
         resp.status(500).json({ message: "Internal server error" });
     }
 } 
+
+export const reiniciarContrasena = async (req: Request, resp: Response): Promise<any> => {
+    try {
+        const { usuario, newContrasena } = req.body;
+
+        // Verificar si el usuario ya existe
+        const existingUser = await Usuario.findOneOrFail({ where: { usuario } });
+
+        // Encriptar la contraseña por defecto
+        const hashedPassword = await bcrypt.hash(newContrasena, 10);
+        existingUser.contrasena = hashedPassword;
+        existingUser.cambiarContrasena = 1; // Asignar valor por defecto para cambiarContrasena
+
+        await existingUser.save();
+
+        resp.status(200).json({
+            message: "Contraseña reiniciada exitosamente",
+            user: existingUser
+        });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            return resp.status(404).json({ message: "Usuario no encontrado" });
+        }
+        console.error("Error reiniciando contraseña:", error);
+        resp.status(500).json({ message: "Internal server error" });
+    }
+}

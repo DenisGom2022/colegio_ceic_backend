@@ -71,3 +71,12 @@ export const cambiaContrasenaValidator = [
         .notEmpty().withMessage('El confirmacion de nueva contraseña es requerida')
         .isString().withMessage('El confirmacion de nueva contraseña debe ser una cadena de texto')
 ]
+
+export const reiniciarContrasenaValidator  = [
+    body("usuario")
+        .notEmpty().withMessage('El usuario es requerido')
+        .isString().withMessage('El usuario debe ser una cadena de texto'),
+    body("newContrasena")
+        .notEmpty().withMessage('El contraseña nueva es requerida')
+        .isString().withMessage('El contraseña nueva debe ser una cadena de texto'),
+]
