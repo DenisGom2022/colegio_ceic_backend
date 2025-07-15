@@ -10,4 +10,4 @@ export const catedraticoRoute = Router();
 catedraticoRoute.post("/", authWithRoles([ROLES.ADMIN]), catredraticoValidator, validarDatos, createCatedratico);
 catedraticoRoute.get("/", authWithRoles([ROLES.ADMIN]), getAllCatedraticos);
 catedraticoRoute.get("/:id", authWithRoles([ROLES.ADMIN]), getCatedratico);
-catedraticoRoute.put("/", authWithRoles([ROLES.ADMIN]), catredraticoValidator, validarDatos, modificarCatedratico);
+catedraticoRoute.put("/", authWithRoles([ROLES.ADMIN]), modificarCatedratico);

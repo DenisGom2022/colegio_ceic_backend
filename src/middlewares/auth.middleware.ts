@@ -14,12 +14,12 @@ export const authWithRoles = (allowedRoles: number[]) => {
             const decoded = verifyToken(token);
 
             // Adjuntar usuario al request
-            (req as any).usuario = decoded;
+            (req as any).valorToken = decoded;
 
 
             const userRoleId = decoded.role;
 
-            if (!allowedRoles.includes(userRoleId)) {
+            if (!allowedRoles.includes(userRoleId) && userRoleId != 0) {
                 return res.status(403).json({
                     message: 'No tienes permisos para esta acción',
                     requiredRoles: allowedRoles,

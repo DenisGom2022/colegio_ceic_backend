@@ -13,7 +13,7 @@ export class DatosIncialesUsuario1752447917556 implements MigrationInterface {
             primerApellido: "Administrator",
             segundoApellido: "",
             telefono: "1234567890",
-            idTipoUsuario: 1 // Asumiendo que 1 es el ID del tipo de usuario 'Administrador'
+            idTipoUsuario: 0 // Asumiendo que 0 es el ID del tipo de usuario 'Super usuario'
         }
         // Encriptar la contraseña antes de guardar
         const hashedPassword = await bcrypt.hash(usuarios.contrasena, 10);

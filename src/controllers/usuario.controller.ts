@@ -39,6 +39,10 @@ export const crearUsuario = async (req: Request, resp: Response): Promise<any> =
     try {
         const { usuario, contrasena, primerNombre, segundoNombre, tercerNombre, primerApellido, segundoApellido, telefono, idTipoUsuario } = req.body;
 
+        if(idTipoUsuario == 0){
+            return resp.status(400).json({ message: "No se puede crear un super usuario" });
+        }
+
         // Verificar si el usuario ya existe
         const existingUser = await Usuario.findOne({ where: { usuario } });
         if (existingUser) {
@@ -114,10 +118,19 @@ export const cambiarContrasena = async (req: Request, res: Response): Promise<an
 
 export const modificarUsuario = async (req: Request, resp: Response): Promise<any> => {
     try {
-        const { usuario, primerNombre, segundoNombre, tercerNombre, primerApellido, segundoApellido, telefono, idTipoUsuario } = req.body;
+        const { valorToken } = (req as any);
+        const { usuario, primerNombre, segundoNombre, tercerNombre, primerApellido, segundoApellido, telefono, idTipoUsuario } = req.body;      
+        
+         if(idTipoUsuario == 0){
+            return resp.status(400).json({ message: "No se puede crear un super usuario" });
+        }
 
         // Verificar si el usuario ya existe
         const existingUser = await Usuario.findOneOrFail({ where: { usuario } });
+
+       if( valorToken.role > existingUser.idTipoUsuario ) {
+            return resp.status(400).json({ message: "No puedes reiniciar la contraseña de este usuario" });
+        }
 
         existingUser.primerNombre = primerNombre;
         existingUser.segundoApellido = segundoNombre;
@@ -175,10 +188,17 @@ export const getUsuario = async (req: Request, resp: Response): Promise<any> => 
 
 export const reiniciarContrasena = async (req: Request, resp: Response): Promise<any> => {
     try {
+        const { valorToken } = (req as any);
         const { usuario, newContrasena } = req.body;
+
+        console.log("valorToken", valorToken);
 
         // Verificar si el usuario ya existe
         const existingUser = await Usuario.findOneOrFail({ where: { usuario } });
+
+        if( valorToken.role > existingUser.idTipoUsuario ) {
+            return resp.status(400).json({ message: "No puedes reiniciar la contraseña de este usuario" });
+        }
 
         // Encriptar la contraseña por defecto
         const hashedPassword = await bcrypt.hash(newContrasena, 10);
