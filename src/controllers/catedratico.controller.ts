@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Catedratico } from "../models/Catedratico";
-import { QueryFailedError } from "typeorm";
+import { EntityNotFoundError, QueryFailedError } from "typeorm";
 
 export const createCatedratico = async (req: Request, resp: Response): Promise<any> => {
     try {
@@ -32,12 +32,41 @@ export const createCatedratico = async (req: Request, resp: Response): Promise<a
     }
 }
 
-export const getAllCatedraticos = async (req: Request, res: Response) => {
+export const getAllCatedraticos = async (req: Request, resp: Response): Promise<any> => {
     try {
-        const usuarios = await Catedratico.find();
-        res.status(200).json({ message: "usuarios encontrados", usuarios });
+        const catedraticos = await Catedratico.find();
+        const catedraticosWhitoutPassword = catedraticos.map(catedratico => {
+            const usuario = catedratico.usuario;
+            const { contrasena, ...usuarioWhitoutPassword } = usuario;
+            return {...catedratico, usuario: usuarioWhitoutPassword};
+        })
+        return resp.status(200).json({ message: "usuarios encontrados", catedraticos:catedraticosWhitoutPassword });
     } catch (error) {
         console.error("Error fetching usuarios:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return resp.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const getCatedratico = async (req: Request, resp: Response): Promise<any> => {
+    try {
+        const { dpi } = req.params;
+
+        // Verificar si el usuario ya existe
+        const existingCatedratico = await Catedratico.findOneOrFail({ where: { dpi } });
+        const usuario = existingCatedratico.usuario;
+        const { contrasena, ...usuarioWhitoutPassword } = usuario;
+        const catedraticoWhitoutPassword = {...existingCatedratico, usuario:usuarioWhitoutPassword};
+
+        resp.status(200).json({
+            message: "Usuario encontrado exitosamente",
+            catedratico: catedraticoWhitoutPassword
+        });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            return resp.status(404).json({ message: "Catedratico no encontrado" });
+        }
+        console.error("Error creating usuario:", error);
+        resp.status(500).json({ message: "Internal server error" });
+    }
+};
+
