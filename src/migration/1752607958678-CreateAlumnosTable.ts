@@ -14,31 +14,31 @@ export class CreateAlumnosTable1752607958678 implements MigrationInterface {
                         length: "20",
                     },
                     {
-                        name: "primerNombre",
+                        name: "primer_nombre",
                         type: "nvarchar",
                         length: "100",
                         isNullable: false
                     },
                     {
-                        name: "segundoNombre",
+                        name: "segundo_nombre",
                         type: "nvarchar",
                         length: "100",
                         isNullable: true
                     },
                     {
-                        name: "tercerNombre",
+                        name: "tercer_nombre",
                         type: "nvarchar",
                         length: "100",
                         isNullable: true
                     },
                     {
-                        name: "primerApellido",
+                        name: "primer_apellido",
                         type: "nvarchar",
                         length: "100",
                         isNullable: false
                     },
                     {
-                        name: "segundoApellido",
+                        name: "segundo_apellido",
                         type: "nvarchar",
                         length: "100",
                         isNullable: true
@@ -49,15 +49,31 @@ export class CreateAlumnosTable1752607958678 implements MigrationInterface {
                         length: "20",
                         isNullable: true
                     },
-
                     {
                         name: "genero",
                         type: "enum",
                         enum: ["M", "F"],
-                        enumName: "genero_enum", // opcional, pero útil para claridad
+                        enumName: "genero_enum",
                         isNullable: false
+                    },
+                    {
+                        name: "created_at",
+                        type: "datetime",
+                        default: "CURRENT_TIMESTAMP",
+                        isNullable: false
+                    },
+                    {
+                        name: "updated_at",
+                        type: "datetime",
+                        default: "CURRENT_TIMESTAMP",
+                        onUpdate: "CURRENT_TIMESTAMP",
+                        isNullable: false
+                    },
+                    {
+                        name: "deleted_at",
+                        type: "datetime",
+                        isNullable: true
                     }
-
                 ]
             }),
         )

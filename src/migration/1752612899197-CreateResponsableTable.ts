@@ -13,31 +13,31 @@ export class CreateResponsableTable1752612899197 implements MigrationInterface {
                         isPrimary: true
                     },
                     {
-                        name: "primerNombre",
+                        name: "primer_nombre",
                         type: "nvarchar",
                         length: "100",
                         isNullable: false
                     },
                     {
-                        name: "segundoNombre",
+                        name: "segundo_nombre",
                         type: "nvarchar",
                         length: "100",
                         isNullable: true
                     },
                     {
-                        name: "tercerNombre",
+                        name: "tercer_nombre",
                         type: "nvarchar",
                         length: "100",
                         isNullable: true
                     },
                     {
-                        name: "primerApellido",
+                        name: "primer_apellido",
                         type: "nvarchar",
                         length: "100",
                         isNullable: false
                     },
                     {
-                        name: "segundoApellido",
+                        name: "segundo_apellido",
                         type: "nvarchar",
                         length: "100",
                         isNullable: true
@@ -58,6 +58,24 @@ export class CreateResponsableTable1752612899197 implements MigrationInterface {
                         type: "nvarchar",
                         length: "20",
                         isNullable: false                        
+                    },
+                    {
+                        name: "created_at",
+                        type: "datetime",
+                        default: "CURRENT_TIMESTAMP",
+                        isNullable: false
+                    },
+                    {
+                        name: "updated_at",
+                        type: "datetime",
+                        default: "CURRENT_TIMESTAMP",
+                        onUpdate: "CURRENT_TIMESTAMP",
+                        isNullable: false
+                    },
+                    {
+                        name: "deleted_at",
+                        type: "datetime",
+                        isNullable: true
                     }
                 ],
                 foreignKeys: [
