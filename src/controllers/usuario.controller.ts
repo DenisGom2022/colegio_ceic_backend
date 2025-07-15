@@ -2,6 +2,7 @@ import { Usuario } from "../models/Usuario";
 import e, { Request, Response } from "express";
 import * as bcrypt from "bcryptjs";
 import { EntityNotFoundError, QueryFailedError } from "typeorm";
+import { TipoUsuario } from "../models/TipoUsuario";
 
 export const getAllUsuarios = async (req: Request, res: Response) => {
     try {
@@ -195,6 +196,16 @@ export const reiniciarContrasena = async (req: Request, resp: Response): Promise
             return resp.status(404).json({ message: "Usuario no encontrado" });
         }
         console.error("Error reiniciando contraseña:", error);
+        resp.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const getAllTiposUsuario = async (req:Request, resp:Response):Promise<any> => {
+    try {
+        const tiposUsuario = await TipoUsuario.find();
+        return resp.status(200).send({message:"Tipos de usuario obtenidos con exito", tiposUsuario})
+    } catch (error) {
+        console.error("Error fetching usuarios:", error);
         resp.status(500).json({ message: "Internal server error" });
     }
 }

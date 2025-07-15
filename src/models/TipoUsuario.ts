@@ -10,10 +10,4 @@ export class TipoUsuario extends BaseEntity {
 
     @Column({name: "created_at", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     createdAt: Date;
-    
-    constructor(id: number, descripcion: string) {
-        super();
-        this.id = id;
-        this.descripcion = descripcion;
-    }
 }
