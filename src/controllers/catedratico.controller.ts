@@ -57,7 +57,7 @@ export const getCatedratico = async (req: Request, resp: Response): Promise<any>
         const { contrasena, ...usuarioWhitoutPassword } = usuario;
         const catedraticoWhitoutPassword = {...existingCatedratico, usuario:usuarioWhitoutPassword};
 
-        resp.status(200).json({
+        return resp.status(200).json({
             message: "Usuario encontrado exitosamente",
             catedratico: catedraticoWhitoutPassword
         });
@@ -66,7 +66,7 @@ export const getCatedratico = async (req: Request, resp: Response): Promise<any>
             return resp.status(404).json({ message: "Catedratico no encontrado" });
         }
         console.error("Error creating usuario:", error);
-        resp.status(500).json({ message: "Internal server error" });
+        return resp.status(500).json({ message: "Internal server error" });
     }
 };
 
