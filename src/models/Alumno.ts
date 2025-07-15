@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryColumn, Column, OneToMany } from "typeorm";
+import { BaseEntity, Entity, PrimaryColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 import { Genero } from "../utils/genero";
 import { Responsable } from "./Responsable";
 
@@ -28,6 +28,15 @@ export class Alumno extends BaseEntity {
     @Column({ type: "enum", enum: Genero, name: "genero" })
     genero: Genero;
 
-    @OneToMany(() => Responsable, responsable => responsable.alumno)
-    responsables:Responsable[];
+    @CreateDateColumn({ type: "datetime", name: "created_at" })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: "datetime", name: "updated_at" })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ type: "datetime", name: "deleted_at", nullable: true })
+    deletedAt?: Date;
+
+    @OneToMany(() => Responsable, responsable => responsable.alumno, {eager:true})
+    responsables: Responsable[];
 }

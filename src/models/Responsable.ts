@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { BaseEntity, Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 import { Alumno } from "./Alumno";
 import { TipoParentesco } from "./TipoParentesco";
 
@@ -31,11 +31,20 @@ export class Responsable extends BaseEntity {
     @Column({ name: "cui_alumno", type: "nvarchar", length: 20 })
     cuiAlumno: string;
 
+    @CreateDateColumn({ name: "created_at", type: "datetime" })
+    createdAt: Date;
+
+    @UpdateDateColumn({ name: "updated_at", type: "datetime" })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ name: "deleted_at", type: "datetime", nullable: true })
+    deletedAt?: Date;
+
     @ManyToOne(() => Alumno, alumno => alumno.responsables, { onDelete: "CASCADE", onUpdate: "CASCADE" })
     @JoinColumn({ name: "cui_alumno", referencedColumnName: "cui" })
     alumno: Alumno;
 
-    @ManyToOne(() => TipoParentesco, parentesco => parentesco.id, { onDelete: "CASCADE", onUpdate: "CASCADE" })
+    @ManyToOne(() => TipoParentesco, parentesco => parentesco.id, { onDelete: "CASCADE", onUpdate: "CASCADE", eager:true })
     @JoinColumn({ name: "id_parentesco", referencedColumnName: "id" })
     parentesco: TipoParentesco;
 }
