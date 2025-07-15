@@ -133,7 +133,7 @@ export const modificarUsuario = async (req: Request, resp: Response): Promise<an
 
         await existingUser.save();
 
-        resp.status(200).json({
+        return resp.status(200).json({
             message: "Usuario modificado exitosamente"
         });
     } catch (error) {

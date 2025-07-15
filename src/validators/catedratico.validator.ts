@@ -1,6 +1,6 @@
 import { body } from "express-validator";
 
-export const createCatredraticoValidator = [
+export const catredraticoValidator = [
     body("dpi")
         .notEmpty()
         .withMessage("El dpi es obligatorio")

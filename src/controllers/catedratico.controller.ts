@@ -8,7 +8,7 @@ export const createCatedratico = async (req: Request, resp: Response): Promise<a
         // buscar si ya existe el catedrático
         const existingCatedratico = await Catedratico.findOneBy({ dpi });
         if (existingCatedratico) {
-            return resp.status(400).json({ message: "El usuario ya existe" });
+            return resp.status(400).json({ message: "El catedrático ya existe" });
         }
         const newCatedratico = new Catedratico();
         newCatedratico.dpi = dpi;
@@ -70,3 +70,40 @@ export const getCatedratico = async (req: Request, resp: Response): Promise<any>
     }
 };
 
+
+export const modificarCatedratico = async (req: Request, resp: Response): Promise<any> => {
+    try {
+        const { dpi, idUsuario } = req.body;
+
+        // Verificar si el usuario ya existe
+        const existingCatedratico = await Catedratico.findOneOrFail({ where: { dpi } });
+
+        existingCatedratico.idUsuario = idUsuario;
+        if (existingCatedratico.usuario) {
+            existingCatedratico.usuario.usuario = idUsuario;
+        }
+        await existingCatedratico.save();
+
+        return resp.status(200).json({
+            message: "Usuario modificado exitosamente"
+        });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            return resp.status(404).json({ message: "Catedrático no encontrado" });
+        }
+
+        if (error instanceof QueryFailedError) {
+            const { errno, sqlMessage } = error.driverError || {};
+            if (errno === 1062 && sqlMessage?.includes("IDX_UNIQUE_ID_USUARIO")) {
+                return resp.status(400).json({ message: "Usuario ya pertenece a un catedrático" });
+            }
+            if (errno === 1452 && sqlMessage?.includes("FK_id_usuario")) {
+                return resp.status(404).json({ message: "Usuario no existe" });
+            }
+            console.log("Error en BD al modificar usuario: ", error);
+            return resp.status(500).json({ message: "Error en BD al modificar usuario" });
+        }
+        console.error("Error modificando usuario:", error);
+        return resp.status(500).json({ message: "Internal server error" });
+    }
+}
