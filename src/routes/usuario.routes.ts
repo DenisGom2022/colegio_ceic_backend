@@ -11,6 +11,6 @@ usuarioRoute.get("/", authWithRoles([ROLES.ADMIN]), getAllUsuarios);
 usuarioRoute.post("/", authWithRoles([ROLES.ADMIN]), usuarioValidator, validarDatos,  crearUsuario);
 usuarioRoute.get("/tiposUsuario", authWithRoles([ROLES.ADMIN]), getAllTiposUsuario)
 usuarioRoute.post("/reiniciarContrasena", authWithRoles([ROLES.ADMIN]), reiniciarContrasenaValidator, validarDatos, reiniciarContrasena);
+usuarioRoute.patch("/cambiarContrasena", cambiaContrasenaValidator, validarDatos, cambiarContrasena); 
 usuarioRoute.get("/:usuario", authWithRoles([ROLES.ADMIN]), getUsuario);
-usuarioRoute.patch("/cambiarContrasena", cambiaContrasenaValidator, validarDatos, cambiarContrasena);
 usuarioRoute.put("/", authWithRoles([ROLES.ADMIN]), modificarUsuarioValidator, validarDatos, modificarUsuario);

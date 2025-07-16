@@ -51,4 +51,48 @@ export class Responsable extends BaseEntity {
     @ManyToOne(() => TipoParentesco, parentesco => parentesco.id, { onDelete: "CASCADE", onUpdate: "CASCADE", eager:true })
     @JoinColumn({ name: "id_parentesco", referencedColumnName: "id" })
     parentesco: TipoParentesco;
+
+    public isEqual(r:Responsable):boolean{
+        if(!r){
+            return false;
+        }
+        if(this.idResponsable != r.idResponsable){
+            return false;
+        }
+        if(this.primerNombre != r.primerNombre){
+            return false;
+        }
+        if(this.segundoNombre != r.segundoNombre){
+            return false;
+        }
+        if(this.tercerNombre != r.tercerNombre){
+            return false;
+        }
+        if(this.primerApellido != r.primerApellido){
+            return false;
+        }
+        if(this.segundoApellido != r.segundoApellido){
+            return false;
+        }
+        if(this.telefono != r.telefono){
+            return false;
+        }
+
+        return this.idParentesco == r.idParentesco;        
+    }
+
+    public modificaCampos(r: Responsable): Responsable {
+        this.idResponsable = r.idResponsable;
+        this.primerNombre = r.primerNombre;
+        this.segundoNombre = r.segundoNombre;
+        this.tercerNombre = r.tercerNombre;
+        this.primerApellido = r.primerApellido;
+        this.segundoApellido = r.segundoApellido;
+        this.telefono = r.telefono;
+        this.idParentesco = r.idParentesco;
+        if (this.parentesco) {
+            this.parentesco.id = r.idParentesco;
+        }
+        return this;
+    }
 }

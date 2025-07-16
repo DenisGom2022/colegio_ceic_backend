@@ -1,0 +1,38 @@
+
+### Crear alumno
+POST http://localhost:3000/alumno
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "cui": "3043520980101",
+  "primerNombre": "Juan",
+  "segundoNombre": "Carlos",
+  "tercerNombre": "Andrés",
+  "primerApellido": "Pérez",
+  "segundoApellido": "Gómez",
+  "telefono": "55551234",
+  "genero": "M",
+  "responsables": [
+    {
+      "idResponsable": "1234567890138",
+      "primerNombre": "María",
+      "segundoNombre": "Luisa",
+      "tercerNombre": "",
+      "primerApellido": "Pérez",
+      "segundoApellido": "López",
+      "telefono": "55556789",
+      "idParentesco": 1
+    },
+    {
+      "idResponsable": "1234567890141",
+      "primerNombre": "María",
+      "segundoNombre": "Luisa",
+      "tercerNombre": "",
+      "primerApellido": "Pérez",
+      "segundoApellido": "López",
+      "telefono": "55556789",
+      "idParentesco": 1
+    }
+  ]
+}

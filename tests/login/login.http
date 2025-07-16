@@ -1,0 +1,9 @@
+### Login y guardar token
+# @name Login
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin123"
+}

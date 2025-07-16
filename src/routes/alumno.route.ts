@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { crearAlumno, getAllAlumnos, getAlumno, modificarAlumno } from "../controllers/alumno.controller";
+import { crearAlumno, eliminarAlumno, getAllAlumnos, getAlumno, modificarAlumno } from "../controllers/alumno.controller";
 import { validarDatos } from "../middlewares/validator.middleware";
 import { alumnoValidator } from "../validators/alumno.validator";
 import { authWithRoles } from "../middlewares/auth.middleware";
@@ -11,3 +11,4 @@ alumnoRoute.post("/", authWithRoles([ROLES.ADMIN]), alumnoValidator, validarDato
 alumnoRoute.get("/", authWithRoles([ROLES.ADMIN]), getAllAlumnos);
 alumnoRoute.get("/:cui", authWithRoles([ROLES.ADMIN]), getAlumno);
 alumnoRoute.put("/", authWithRoles([ROLES.ADMIN]), alumnoValidator, validarDatos, modificarAlumno);
+alumnoRoute.delete("/:cui", authWithRoles([ROLES.ADMIN]), eliminarAlumno);
