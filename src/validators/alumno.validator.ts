@@ -1,6 +1,6 @@
 import { body } from 'express-validator';
 
-export const createAlumnoValidator = [
+export const alumnoValidator = [
     body('cui')
         .isString().withMessage('CUI debe ser un string')
         .isLength({ min: 13, max: 13 }).withMessage('CUI debe tener 13 caracteres'),
