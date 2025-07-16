@@ -6,7 +6,8 @@
     "dev": "ts-node-dev --respawn src/index.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "migration:run":"npx typeorm-ts-node-commonjs migration:run -d ./src/config/data-source"
+    "migration:run":"npx typeorm-ts-node-commonjs migration:run -d ./src/config/data-source",
+    "migration:create":"npx typeorm migration:create ./src/migration/%npm_config_name%"
   },
   "keywords": [],
   "author": "",
