@@ -11,6 +11,8 @@ export class CreateCatParentescoTable1752612886914 implements MigrationInterface
                             name: "id",
                             type: "int",
                             isPrimary: true,
+                            isGenerated: true,
+                            generationStrategy: "increment"
                         },
                         {
                             name: "descripcion",

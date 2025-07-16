@@ -1,10 +1,14 @@
-import { BaseEntity, Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { BaseEntity, Entity, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, PrimaryGeneratedColumn } from "typeorm";
 import { Alumno } from "./Alumno";
 import { TipoParentesco } from "./TipoParentesco";
 
 @Entity({ name: "responsable" })
 export class Responsable extends BaseEntity {
-    @PrimaryColumn({ name: "id_responsable", type: "nvarchar" })
+
+    @PrimaryGeneratedColumn({ type: "int", name: "id" })
+    id: number;
+
+    @Column({ name: "id_responsable", type: "nvarchar" })
     idResponsable: string;
 
     @Column({ name: "primer_nombre", type: "nvarchar", length: 100 })

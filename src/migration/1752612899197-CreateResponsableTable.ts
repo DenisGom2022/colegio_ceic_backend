@@ -8,9 +8,15 @@ export class CreateResponsableTable1752612899197 implements MigrationInterface {
                 name: "responsable",
                 columns: [
                     {
+                        name: "id",
+                        type: "int",
+                        isPrimary: true,
+                        isGenerated: true,
+                        generationStrategy: "increment"
+                    },
+                    {
                         name: "id_responsable",
-                        type: "nvarchar",
-                        isPrimary: true
+                        type: "nvarchar"
                     },
                     {
                         name: "primer_nombre",
@@ -57,7 +63,7 @@ export class CreateResponsableTable1752612899197 implements MigrationInterface {
                         name: "cui_alumno",
                         type: "nvarchar",
                         length: "20",
-                        isNullable: false                        
+                        isNullable: false
                     },
                     {
                         name: "created_at",
