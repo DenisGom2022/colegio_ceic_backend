@@ -4,6 +4,7 @@ import { usuarioRoute } from './routes/usuario.routes';
 import { catedraticoRoute } from './routes/catedratico.routes';
 import { alumnoRoute } from './routes/alumno.route';
 import { cicloRoute } from './routes/ciclo.routes';
+import { cursoRoute } from './routes/curso.routes';
 
 export const app = express();
 app.use(express.json());
@@ -12,4 +13,5 @@ app.use("/login", loginRoute);
 app.use("/catedratico", catedraticoRoute);
 app.use("/alumno", alumnoRoute);
 app.use("/ciclo", cicloRoute);
+app.use("/curso", cursoRoute);
 
