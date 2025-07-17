@@ -1,6 +1,6 @@
 import { body } from "express-validator";
 
-export const nivelAcademicoValidator = [
+export const jornadaValidator = [
     body("descripcion")
         .notEmpty().withMessage("La descripción es obligatoria")
         .isString().withMessage("La descripción debe ser un texto")
@@ -10,8 +10,7 @@ export const nivelAcademicoValidator = [
         .isInt().withMessage("El id debe ser un número entero"),
 ];
 
-
-export const modificarNivelAcademicoValidator = [
+export const modificarJornadaValidator = [
     body("descripcion")
         .notEmpty().withMessage("La descripción es obligatoria")
         .isString().withMessage("La descripción debe ser un texto")

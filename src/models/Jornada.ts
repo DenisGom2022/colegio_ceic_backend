@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 
-@Entity({ name: "cat_nivel_academico" })
-export class NivelAcademico {
+@Entity({ name: "cat_jornada" })
+export class Jornada {
     @PrimaryGeneratedColumn({ name: "id" })
     id: number;
 

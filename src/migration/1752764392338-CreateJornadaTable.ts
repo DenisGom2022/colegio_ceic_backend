@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner, Table } from "typeorm";
 
-export class CreateNivelAcademicoTable1752763300998 implements MigrationInterface {
+export class CreateJornadaTable1752764392338 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
             await queryRunner.createTable(
                 new Table({
-                    name: "cat_nivel_academico",
+                    name: "cat_jornada",
                     columns: [
                         {
                             name: "id",
@@ -42,7 +42,7 @@ export class CreateNivelAcademicoTable1752763300998 implements MigrationInterfac
         }
     
         public async down(queryRunner: QueryRunner): Promise<void> {
-            await queryRunner.dropTable("cat_nivel_academico");
+            await queryRunner.dropTable("cat_jornada");
         }
 
 }
