@@ -7,6 +7,7 @@ import { cicloRoute } from './routes/ciclo.routes';
 import { cursoRoute } from './routes/curso.routes';
 import { nivelAcademicoRoute } from './routes/nivelAcademico.routes';
 import { jornadaRoute } from './routes/jornada.routes';
+import { gradoRoute } from './routes/grado.routes';
 
 export const app = express();
 app.use(express.json());
@@ -18,3 +19,4 @@ app.use("/ciclo", cicloRoute);
 app.use("/curso", cursoRoute);
 app.use("/nivel-academico", nivelAcademicoRoute);
 app.use("/jornada", jornadaRoute);
+app.use("/grado", gradoRoute);
