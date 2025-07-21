@@ -6,8 +6,8 @@
     "dev": "ts-node-dev --respawn src/index.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "migration:run":"npx typeorm-ts-node-commonjs migration:run -d ./src/config/data-source",
-    "migration:create":"npx typeorm migration:create ./src/migration/%npm_config_name%"
+    "migration:run": "npx typeorm-ts-node-commonjs migration:run -d ./src/config/data-source",
+    "migration:create": "npx typeorm migration:create ./src/migration/%npm_config_name%"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,7 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.10",

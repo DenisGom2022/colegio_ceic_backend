@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { loginRoute } from './routes/login.routes';
 import { usuarioRoute } from './routes/usuario.routes';
 import { catedraticoRoute } from './routes/catedratico.routes';
@@ -11,7 +12,9 @@ import { gradoRoute } from './routes/grado.routes';
 import { gradoCicloRoute } from './routes/gradoCiclo.routes';
 import { asignacionCatedraticoRoute } from './routes/asignacionCatedratico.routes';
 
+
 export const app = express();
+app.use(cors());
 app.use(express.json());
 app.use("/usuarios", usuarioRoute);
 app.use("/login", loginRoute);
