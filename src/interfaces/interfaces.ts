@@ -1,4 +1,6 @@
+import { Usuario } from "../models/Usuario";
+
 export interface JwtPayload {
-    usuario: string;
+    usuario: Usuario;
     role: number;
 }
