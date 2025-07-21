@@ -22,12 +22,12 @@ export const createCatedratico = async (req: Request, resp: Response): Promise<a
                 return resp.status(400).json({ message: "Usuario ya pertenece a un catedrático" });
             }
             if (errno === 1452 && sqlMessage?.includes("FK_id_usuario")) {
-                return resp.status(404).json({ message: "Usuario no existe" });
+                return resp.status(404).json({ message: "Catedrático no existe" });
             }
-            console.log("Error en BD al modificar usuario: ", error);
-            return resp.status(500).json({ message: "Error en BD al modificar usuario" });
+            console.log("Error en BD al modificar Catedrático: ", error);
+            return resp.status(500).json({ message: "Error en BD al modificar Catedrático" });
         }
-        console.error("Error fetching usuarios:", error);
+        console.error("Error fetching Catedrático:", error);
         return resp.status(500).json({ message: "Internal server error" });
     }
 }
@@ -40,9 +40,9 @@ export const getAllCatedraticos = async (req: Request, resp: Response): Promise<
             const { contrasena, ...usuarioWhitoutPassword } = usuario;
             return {...catedratico, usuario: usuarioWhitoutPassword};
         })
-        return resp.status(200).json({ message: "usuarios encontrados", catedraticos:catedraticosWhitoutPassword });
+        return resp.status(200).json({ message: "Catedrático encontrados", catedraticos:catedraticosWhitoutPassword });
     } catch (error) {
-        console.error("Error fetching usuarios:", error);
+        console.error("Error fetching Catedrático:", error);
         return resp.status(500).json({ message: "Internal server error" });
     }
 };
@@ -53,19 +53,21 @@ export const getCatedratico = async (req: Request, resp: Response): Promise<any>
 
         // Verificar si el usuario ya existe
         const existingCatedratico = await Catedratico.findOneOrFail({ where: { dpi } });
+        console.log("dpi", dpi);
+        console.log("existingCatedratico", existingCatedratico);
         const usuario = existingCatedratico.usuario;
         const { contrasena, ...usuarioWhitoutPassword } = usuario;
         const catedraticoWhitoutPassword = {...existingCatedratico, usuario:usuarioWhitoutPassword};
 
         return resp.status(200).json({
-            message: "Usuario encontrado exitosamente",
+            message: "Catedrático encontrado exitosamente",
             catedratico: catedraticoWhitoutPassword
         });
     } catch (error) {
         if (error instanceof EntityNotFoundError) {
             return resp.status(404).json({ message: "Catedratico no encontrado" });
         }
-        console.error("Error creating usuario:", error);
+        console.error("Error creating Catedrático:", error);
         return resp.status(500).json({ message: "Internal server error" });
     }
 };
@@ -85,7 +87,7 @@ export const modificarCatedratico = async (req: Request, resp: Response): Promis
         await existingCatedratico.save();
 
         return resp.status(200).json({
-            message: "Usuario modificado exitosamente"
+            message: "Catedrático modificado exitosamente"
         });
     } catch (error) {
         if (error instanceof EntityNotFoundError) {
@@ -100,10 +102,10 @@ export const modificarCatedratico = async (req: Request, resp: Response): Promis
             if (errno === 1452 && sqlMessage?.includes("FK_id_usuario")) {
                 return resp.status(404).json({ message: "Usuario no existe" });
             }
-            console.log("Error en BD al modificar usuario: ", error);
+            console.log("Error en BD al modificar Catedrático: ", error);
             return resp.status(500).json({ message: "Error en BD al modificar usuario" });
         }
-        console.error("Error modificando usuario:", error);
+        console.error("Error modificando Catedrático:", error);
         return resp.status(500).json({ message: "Internal server error" });
     }
 }

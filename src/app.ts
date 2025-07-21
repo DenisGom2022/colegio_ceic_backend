@@ -8,6 +8,8 @@ import { cursoRoute } from './routes/curso.routes';
 import { nivelAcademicoRoute } from './routes/nivelAcademico.routes';
 import { jornadaRoute } from './routes/jornada.routes';
 import { gradoRoute } from './routes/grado.routes';
+import { gradoCicloRoute } from './routes/gradoCiclo.routes';
+import { asignacionCatedraticoRoute } from './routes/asignacionCatedratico.routes';
 
 export const app = express();
 app.use(express.json());
@@ -20,3 +22,5 @@ app.use("/curso", cursoRoute);
 app.use("/nivel-academico", nivelAcademicoRoute);
 app.use("/jornada", jornadaRoute);
 app.use("/grado", gradoRoute);
+app.use("/grado-ciclo", gradoCicloRoute);
+app.use("/asignacion-catedratico", asignacionCatedraticoRoute);
