@@ -1,38 +1,88 @@
 import { Usuario } from "../models/Usuario";
 import e, { Request, Response } from "express";
 import * as bcrypt from "bcryptjs";
-import { EntityNotFoundError, QueryFailedError } from "typeorm";
+import { EntityNotFoundError, QueryFailedError, Like } from "typeorm";
 import { TipoUsuario } from "../models/TipoUsuario";
 
 export const getAllUsuarios = async (req: Request, res: Response) => {
     try {
-        const usuarios = await findUsers();
-        res.status(200).json({ message: "usuarios encontrados", usuarios });
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const search = req.query.search as string || '';
+        const skip = (page - 1) * limit;
+
+        // Crear un query builder para mayor flexibilidad
+        let queryBuilder = Usuario.createQueryBuilder("usuario")
+            .leftJoinAndSelect("usuario.tipoUsuario", "tipoUsuario")
+            .skip(skip)
+            .take(limit);
+
+        // Agregar condición de búsqueda si se proporciona un término
+        if (search && search.trim() !== '') {
+            // Eliminar espacios múltiples del término de búsqueda y convertir a minúsculas
+            const cleanSearch = search.trim().replace(/\s+/g, ' ').toLowerCase();
+            
+            // Dividir el término de búsqueda en palabras individuales
+            const searchWords = cleanSearch.split(' ');
+            
+            if (searchWords.length === 1) {
+                // Si solo hay una palabra, búsqueda simple en todos los campos
+                queryBuilder = queryBuilder.where(
+                    `(LOWER(usuario.usuario) LIKE :searchTerm OR 
+                      LOWER(usuario.primer_nombre) LIKE :searchTerm OR 
+                      LOWER(usuario.segundo_nombre) LIKE :searchTerm OR 
+                      LOWER(usuario.tercer_nombre) LIKE :searchTerm OR 
+                      LOWER(usuario.primer_apellido) LIKE :searchTerm OR 
+                      LOWER(usuario.segundo_apellido) LIKE :searchTerm)`,
+                    { searchTerm: `%${cleanSearch}%` }
+                );
+            } else {
+                // Si hay múltiples palabras, usar un enfoque más simple
+                // Para buscar cada palabra por separado en cualquier columna
+                const params: Record<string, string> = {};
+                let whereClause = '';
+                
+                // Para cada palabra crear una condición que busca en todos los campos
+                searchWords.forEach((word, index) => {
+                    if (word.trim() === '') return;
+                    
+                    const paramName = `searchTerm${index}`;
+                    
+                    if (whereClause.length > 0) {
+                        whereClause += ' AND ';
+                    }
+                    
+                    whereClause += `(
+                        LOWER(usuario.usuario) LIKE :${paramName} OR 
+                        LOWER(usuario.primer_nombre) LIKE :${paramName} OR 
+                        LOWER(usuario.segundo_nombre) LIKE :${paramName} OR 
+                        LOWER(usuario.tercer_nombre) LIKE :${paramName} OR 
+                        LOWER(usuario.primer_apellido) LIKE :${paramName} OR 
+                        LOWER(usuario.segundo_apellido) LIKE :${paramName}
+                    )`;
+                    
+                    params[paramName] = `%${word}%`;
+                });
+                
+                // Aplicar todas las condiciones (cada palabra debe estar presente en alguna columna)
+                queryBuilder = queryBuilder.where(whereClause, params);
+            }
+        }
+
+        // Ejecutar la consulta
+        const [usuarios, total] = await queryBuilder.getManyAndCount();
+
+        res.status(200).json({
+            message: "usuarios encontrados",
+            usuarios,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+        });
     } catch (error) {
         console.error("Error fetching usuarios:", error);
         res.status(500).json({ message: "Internal server error" });
     }
-};
-
-const findUsers = async () => {
-    return await Usuario.find({
-        select: {
-            usuario: true,
-            primerNombre: true,
-            segundoNombre: true,
-            tercerNombre: true,
-            primerApellido: true,
-            segundoApellido: true,
-            telefono: true,
-            createdAt: true,
-            updatedAt: true,
-            tipoUsuario: {
-                id: true,
-                descripcion: true,
-            },
-            cambiarContrasena: true,
-        },
-    });
 };
 
 export const crearUsuario = async (req: Request, resp: Response): Promise<any> => {
