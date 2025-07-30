@@ -34,8 +34,9 @@ export const createCatedratico = async (req: Request, resp: Response): Promise<a
 
 export const getAllCatedraticos = async (req: Request, resp: Response): Promise<any> => {
     try {
-        const catedraticos = await Catedratico.find();
+        const catedraticos = await Catedratico.find({relations:{ usuario:true }});
         const catedraticosWhitoutPassword = catedraticos.map(catedratico => {
+            console.log(catedratico);
             const usuario = catedratico.usuario;
             const { contrasena, ...usuarioWhitoutPassword } = usuario;
             return {...catedratico, usuario: usuarioWhitoutPassword};
