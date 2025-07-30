@@ -241,8 +241,6 @@ export const reiniciarContrasena = async (req: Request, resp: Response): Promise
         const { valorToken } = (req as any);
         const { usuario, newContrasena } = req.body;
 
-        console.log("valorToken", valorToken);
-
         // Verificar si el usuario ya existe
         const existingUser = await Usuario.findOneOrFail({ where: { usuario } });
 
@@ -277,5 +275,29 @@ export const getAllTiposUsuario = async (req:Request, resp:Response):Promise<any
     } catch (error) {
         console.error("Error fetching usuarios:", error);
         resp.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const eliminarUsuario = async (req: Request, resp: Response): Promise<any> => {
+    try {
+        const { usuario }: any = req.params;
+
+        // Verificar si el usuario existe
+        const existingUsuario = await Usuario.findOneByOrFail({ usuario });
+
+        if(existingUsuario.idTipoUsuario == 0){
+            return resp.status(400).json({ message: "No se puede eliminar un super usuario" });
+        }
+
+        // Eliminar el usuario
+        await Usuario.softRemove(existingUsuario);
+
+        return resp.status(200).json({ message: "Usuario eliminado exitosamente" });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            return resp.status(404).json({ message: "Usuario no encontrado" });
+        }
+        console.error("Error eliminando usuario:", error);
+        return resp.status(500).json({ message: "Internal server error" });
     }
 }
