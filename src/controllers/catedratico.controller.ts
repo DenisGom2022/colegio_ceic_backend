@@ -22,7 +22,7 @@ export const createCatedratico = async (req: Request, resp: Response): Promise<a
                 return resp.status(400).json({ message: "Usuario ya pertenece a un catedrático" });
             }
             if (errno === 1452 && sqlMessage?.includes("FK_id_usuario")) {
-                return resp.status(404).json({ message: "Catedrático no existe" });
+                return resp.status(404).json({ message: "Usuario no existe" });
             }
             console.log("Error en BD al modificar Catedrático: ", error);
             return resp.status(500).json({ message: "Error en BD al modificar Catedrático" });
