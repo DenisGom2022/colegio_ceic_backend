@@ -25,6 +25,11 @@ export class CreateCicloTable1752706638209 implements MigrationInterface {
                             default: "CURRENT_TIMESTAMP",
                         },
                         {
+                            name: "fecha_fin",
+                            type: "datetime",
+                            default: null,
+                        },
+                        {
                             name: "updated_at",
                             type: "datetime",
                             default: "CURRENT_TIMESTAMP",

@@ -11,6 +11,9 @@ export class Ciclo {
     @CreateDateColumn({ name: "created_at" })
     createdAt: Date;
 
+    @Column({ name: "fecha_fin", type:"date" })
+    fechaFin:Date;
+
     @UpdateDateColumn({ name: "updated_at" })
     updatedAt: Date;
 
