@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Catedratico } from "../models/Catedratico";
 import { EntityNotFoundError, QueryFailedError } from "typeorm";
+import { Usuario } from "../models/Usuario";
 
 export const createCatedratico = async (req: Request, resp: Response): Promise<any> => {
     try {
@@ -34,16 +35,69 @@ export const createCatedratico = async (req: Request, resp: Response): Promise<a
 
 export const getAllCatedraticos = async (req: Request, resp: Response): Promise<any> => {
     try {
-        const catedraticos = await Catedratico.find({relations:{ usuario:true }});
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const search = req.query.search as string || '';
+        const skip = (page - 1) * limit;
+
+        // Crear un query builder para mayor flexibilidad
+        let queryBuilder = Catedratico.createQueryBuilder("catedratico")
+            .leftJoinAndSelect("catedratico.usuario", "usuario")
+            .skip(skip)
+            .take(limit);
+
+        // Agregar condición de búsqueda si se proporciona un término
+        if (search && search.trim() !== '') {
+            try {
+                // Eliminar espacios múltiples del término de búsqueda y convertir a minúsculas
+                const cleanSearch = search.trim().replace(/\s+/g, ' ').toLowerCase();
+                
+                // Enfoque simplificado: Buscar en todos los campos relevantes
+                queryBuilder = queryBuilder.where(
+                    `(LOWER(catedratico.dpi) LIKE :search OR 
+                      LOWER(usuario.usuario) LIKE :search OR
+                      LOWER(usuario.primer_nombre) LIKE :search OR 
+                      LOWER(usuario.segundo_nombre) LIKE :search OR 
+                      LOWER(usuario.tercer_nombre) LIKE :search OR 
+                      LOWER(usuario.primer_apellido) LIKE :search OR 
+                      LOWER(usuario.segundo_apellido) LIKE :search OR
+                      CONCAT_WS(' ', 
+                        LOWER(usuario.primer_nombre), 
+                        LOWER(usuario.segundo_nombre), 
+                        LOWER(usuario.tercer_nombre), 
+                        LOWER(usuario.primer_apellido), 
+                        LOWER(usuario.segundo_apellido)
+                      ) LIKE :search)`,
+                    { search: `%${cleanSearch}%` }
+                );
+                
+                console.log("Query generado con éxito");
+            } catch (error) {
+                console.error("Error en la búsqueda:", error);
+            }
+        }
+
+        // Ejecutar la consulta
+        const [catedraticos, total] = await queryBuilder.getManyAndCount();
+
+        // Eliminar contraseñas de los resultados
         const catedraticosWhitoutPassword = catedraticos.map(catedratico => {
-            console.log(catedratico);
-            const usuario = catedratico.usuario;
-            const { contrasena, ...usuarioWhitoutPassword } = usuario;
-            return {...catedratico, usuario: usuarioWhitoutPassword};
-        })
-        return resp.status(200).json({ message: "Catedrático encontrados", catedraticos:catedraticosWhitoutPassword });
+            if (catedratico.usuario) {
+                const { contrasena, ...usuarioWhitoutPassword } = catedratico.usuario;
+                return { ...catedratico, usuario: usuarioWhitoutPassword };
+            }
+            return catedratico;
+        });
+
+        return resp.status(200).json({ 
+            message: "Catedráticos encontrados", 
+            catedraticos: catedraticosWhitoutPassword,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+        });
     } catch (error) {
-        console.error("Error fetching Catedrático:", error);
+        console.error("Error fetching Catedráticos:", error);
         return resp.status(500).json({ message: "Internal server error" });
     }
 };
@@ -110,3 +164,32 @@ export const modificarCatedratico = async (req: Request, resp: Response): Promis
         return resp.status(500).json({ message: "Internal server error" });
     }
 }
+
+/**
+ * Realiza un soft delete (borrado lógico) de un catedrático
+ * Esto marca el registro como eliminado sin borrarlo físicamente de la BD
+ */
+export const eliminarCatedratico = async (req: Request, resp: Response): Promise<any> => {
+    try {
+        const { dpi } = req.params;
+
+        // Verificar si el catedrático existe
+        const existingCatedratico = await Catedratico.findOneOrFail({ where: { dpi } });
+        
+        // Realizar el soft delete
+        await Catedratico.softRemove(existingCatedratico);
+
+        return resp.status(200).json({
+            message: "Catedrático eliminado exitosamente"
+        });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            return resp.status(404).json({ message: "Catedrático no encontrado" });
+        }
+
+        console.error("Error eliminando Catedrático:", error);
+        return resp.status(500).json({ message: "Error interno del servidor" });
+    }
+}
+
+

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCatedratico, getAllCatedraticos, getCatedratico, modificarCatedratico } from "../controllers/catedratico.controller";
+import { createCatedratico, eliminarCatedratico, getAllCatedraticos, getCatedratico, modificarCatedratico } from "../controllers/catedratico.controller";
 import { catredraticoValidator } from "../validators/catedratico.validator";
 import { validarDatos } from "../middlewares/validator.middleware";
 import { authWithRoles } from "../middlewares/auth.middleware";
@@ -11,3 +11,4 @@ catedraticoRoute.post("/", authWithRoles([ROLES.ADMIN]), catredraticoValidator, 
 catedraticoRoute.get("/", authWithRoles([ROLES.ADMIN]), getAllCatedraticos);
 catedraticoRoute.get("/:dpi", authWithRoles([ROLES.ADMIN]), getCatedratico);
 catedraticoRoute.put("/", authWithRoles([ROLES.ADMIN]), modificarCatedratico);
+catedraticoRoute.delete("/:dpi", authWithRoles([ROLES.ADMIN]), eliminarCatedratico);

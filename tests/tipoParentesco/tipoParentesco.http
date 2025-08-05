@@ -1,0 +1,29 @@
+### Obtener todos los tipos de parentesco
+GET http://localhost:3000/tipo-parentesco
+Authorization: Bearer {{token}}
+
+### Obtener un tipo de parentesco específico
+GET http://localhost:3000/tipo-parentesco/1
+Authorization: Bearer {{token}}
+
+### Crear un nuevo tipo de parentesco
+POST http://localhost:3000/tipo-parentesco
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "descripcion": "Nuevo tipo de parentesco"
+}
+
+### Modificar un tipo de parentesco existente
+PUT http://localhost:3000/tipo-parentesco/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "descripcion": "Tipo de parentesco actualizado"
+}
+
+### Eliminar un tipo de parentesco
+DELETE http://localhost:3000/tipo-parentesco/1
+Authorization: Bearer {{token}}

@@ -17,8 +17,8 @@ export const alumnoValidator = [
         .isString().withMessage('primerApellido debe ser un string')
         .notEmpty().withMessage('primerApellido es requerido'),
     body('segundoApellido')
-        .isString().withMessage('segundoApellido debe ser un string')
-        .notEmpty().withMessage('segundoApellido es requerido'),
+        .optional()
+        .isString().withMessage('segundoApellido debe ser un string'),
     body('telefono')
         .isString().withMessage('telefono debe ser un string')
         .isLength({ min: 8, max: 8 }).withMessage('telefono debe tener 8 dígitos'),
@@ -50,8 +50,8 @@ export const alumnoValidator = [
         .notEmpty().withMessage('primerApellido del responsable es requerido'),
     body('responsables.*.segundoApellido')
         .if(body('responsables').isArray({ min: 1 }))
-        .isString().withMessage('segundoApellido del responsable debe ser un string')
-        .notEmpty().withMessage('segundoApellido del responsable es requerido'),
+        .optional()
+        .isString().withMessage('segundoApellido del responsable debe ser un string'),
     body('responsables.*.telefono')
         .if(body('responsables').isArray({ min: 1 }))
         .isString().withMessage('telefono del responsable debe ser un string')

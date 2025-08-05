@@ -82,10 +82,59 @@ const generarResponsables = async (responsables: Responsable[], alumno: Alumno) 
 
 export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> => {
     try {
-        const alumnos = await Alumno.find();
-        return resp.status(200).json({ message: "usuarios encontrados", alumnos });
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const search = req.query.search as string || '';
+        const skip = (page - 1) * limit;
+
+        // Crear un query builder para mayor flexibilidad
+        let queryBuilder = Alumno.createQueryBuilder("alumno")
+            .leftJoinAndSelect("alumno.responsables", "responsables")
+            .skip(skip)
+            .take(limit);
+
+        // Agregar condición de búsqueda si se proporciona un término
+        if (search && search.trim() !== '') {
+            try {
+                // Eliminar espacios múltiples del término de búsqueda y convertir a minúsculas
+                const cleanSearch = search.trim().replace(/\s+/g, ' ').toLowerCase();
+                
+                // Enfoque simplificado: Buscar en todos los campos relevantes
+                queryBuilder = queryBuilder.where(
+                    `(LOWER(alumno.cui) LIKE :search OR 
+                      LOWER(alumno.primerNombre) LIKE :search OR 
+                      LOWER(alumno.segundoNombre) LIKE :search OR 
+                      LOWER(alumno.tercerNombre) LIKE :search OR 
+                      LOWER(alumno.primerApellido) LIKE :search OR 
+                      LOWER(alumno.segundoApellido) LIKE :search OR
+                      CONCAT_WS(' ', 
+                        LOWER(alumno.primerNombre), 
+                        LOWER(alumno.segundoNombre), 
+                        LOWER(alumno.tercerNombre), 
+                        LOWER(alumno.primerApellido), 
+                        LOWER(alumno.segundoApellido)
+                      ) LIKE :search)`,
+                    { search: `%${cleanSearch}%` }
+                );
+                
+                console.log("Query generado con éxito");
+            } catch (error) {
+                console.error("Error en la búsqueda:", error);
+            }
+        }
+
+        // Ejecutar la consulta
+        const [alumnos, total] = await queryBuilder.getManyAndCount();
+
+        return resp.status(200).json({ 
+            message: "Alumnos encontrados", 
+            alumnos,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+        });
     } catch (error) {
-        console.error("Error fetching usuarios:", error);
+        console.error("Error fetching alumnos:", error);
         return resp.status(500).json({ message: "Internal server error" });
     }
 };
