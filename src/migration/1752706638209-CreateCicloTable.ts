@@ -27,7 +27,7 @@ export class CreateCicloTable1752706638209 implements MigrationInterface {
                         {
                             name: "fecha_fin",
                             type: "datetime",
-                            default: null,
+                            isNullable: true
                         },
                         {
                             name: "updated_at",

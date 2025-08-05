@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAllCiclos, getCiclo, crearCiclo, modificarCiclo, eliminarCiclo } from "../controllers/ciclo.controller";
+import { getAllCiclos, getCiclo, crearCiclo, modificarCiclo, eliminarCiclo, finalizaCiclo } from "../controllers/ciclo.controller";
 import { validarDatos } from "../middlewares/validator.middleware";
 import { authWithRoles } from "../middlewares/auth.middleware";
 import { ROLES } from "../utils/roles";
@@ -12,3 +12,4 @@ cicloRoute.get("/:id", authWithRoles([ROLES.ADMIN]), getCiclo);
 cicloRoute.post("/", authWithRoles([ROLES.ADMIN]), cicloValidator, validarDatos, crearCiclo);
 cicloRoute.put("/", authWithRoles([ROLES.ADMIN]), cicloValidator, validarDatos, modificarCiclo);
 cicloRoute.delete("/:id", authWithRoles([ROLES.ADMIN]), eliminarCiclo);
+cicloRoute.patch("/finaliza-ciclo/:id", authWithRoles([ROLES.ADMIN]), finalizaCiclo);

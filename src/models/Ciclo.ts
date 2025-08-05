@@ -12,7 +12,7 @@ export class Ciclo {
     createdAt: Date;
 
     @Column({ name: "fecha_fin", type:"date" })
-    fechaFin:Date;
+    fechaFin: Date|null;
 
     @UpdateDateColumn({ name: "updated_at" })
     updatedAt: Date;
