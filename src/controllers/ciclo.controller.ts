@@ -7,7 +7,19 @@ const cicloRepo = AppDataSource.getRepository(Ciclo);
 
 export const getAllCiclos = async (req: Request, res: Response): Promise<any> => {
     try {
-        const ciclos = await cicloRepo.find();
+        const ciclos = await cicloRepo.find({
+            relations: {
+                gradosCiclo: {
+                    grado: {
+                        nivelAcademico: true,
+                        jornada: true
+                    }
+                }
+            },
+            order: {
+                createdAt: "DESC"
+            }
+        });
         return res.status(200).json({ message: "Ciclos obtenidos exitosamente", ciclos });
     } catch (error) {
         console.error("Error obteniendo ciclos:", error);
@@ -17,8 +29,21 @@ export const getAllCiclos = async (req: Request, res: Response): Promise<any> =>
 
 export const getCiclo = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { id }:any = req.params;
-        const ciclo = await cicloRepo.findOneByOrFail({ id });
+        const { id }: any = req.params;
+        const ciclo = await cicloRepo.findOneOrFail({
+            where: { id },
+            relations: {
+                gradosCiclo: {
+                    grado: {
+                        nivelAcademico: true,
+                        jornada: true
+                    }
+                }
+            },
+            order: {
+                createdAt: "DESC"
+            } 
+        });
         return res.status(200).json({ message: "Ciclo obtenido exitosamente", ciclo });
     } catch (error) {
         if (error instanceof EntityNotFoundError) {
@@ -32,14 +57,14 @@ export const getCiclo = async (req: Request, res: Response): Promise<any> => {
 export const crearCiclo = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id, descripcion } = req.body;
-        
+
         const existingCiclo = await cicloRepo.findOneBy({ id });
-        if(existingCiclo){
+        if (existingCiclo) {
             return res.status(400).json({ message: "El ciclo ya existe" });
         }
         const cicloActivo = await cicloRepo.findOneBy({ fechaFin: IsNull() });
-        if(cicloActivo){
-            return  res.status(400).json({ message: "Ya se encuentra un ciclo activo, finalicelo para iniciar otro" });
+        if (cicloActivo) {
+            return res.status(400).json({ message: "Ya se encuentra un ciclo activo, finalicelo para iniciar otro" });
         }
         const ciclo = cicloRepo.create({ id, descripcion });
         await cicloRepo.save(ciclo);
@@ -54,6 +79,9 @@ export const modificarCiclo = async (req: Request, res: Response): Promise<any> 
     try {
         const { id, descripcion } = req.body;
         const ciclo = await cicloRepo.findOneByOrFail({ id });
+        if(ciclo.fechaFin != null){
+            return res.status(400).json({ message: "Ciclo finalizado no se puede modificar", ciclo });
+        }
         ciclo.descripcion = descripcion;
         await cicloRepo.save(ciclo);
         return res.status(200).json({ message: "Ciclo modificado exitosamente", ciclo });
@@ -68,8 +96,19 @@ export const modificarCiclo = async (req: Request, res: Response): Promise<any> 
 
 export const eliminarCiclo = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { id }:any = req.params;
-        const ciclo = await cicloRepo.findOneByOrFail({ id });
+        const { id }: any = req.params;
+        const ciclo = await cicloRepo.findOneOrFail({
+            where: { id },
+            relations: {
+                gradosCiclo: true
+            }
+        });
+        if(ciclo.fechaFin != null){
+            return res.status(400).json({ message: "Ciclo finalizado no se puede eliminar", ciclo });
+        }
+        if(ciclo?.gradosCiclo?.length > 0){
+            return res.status(400).json({ message: "Ciclo tiene grados relacionados no se puede eliminar", ciclo });
+        }
         await cicloRepo.softRemove(ciclo);
         return res.status(200).json({ message: "Ciclo eliminado exitosamente" });
     } catch (error) {
@@ -81,11 +120,11 @@ export const eliminarCiclo = async (req: Request, res: Response): Promise<any> =
     }
 };
 
-export const finalizaCiclo = async (req:Request, res:Response): Promise<any> => {
+export const finalizaCiclo = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { id }:any = req.params;
+        const { id }: any = req.params;
         const ciclo = await cicloRepo.findOneByOrFail({ id });
-        if(ciclo.fechaFin != null){
+        if (ciclo.fechaFin != null) {
             return res.status(400).json({ message: "Ciclo ya ha finalizado" });
         }
         ciclo.fechaFin = new Date();
