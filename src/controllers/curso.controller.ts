@@ -10,7 +10,9 @@ const cursoRepo = AppDataSource.getRepository(Curso);
 
 export const getAllCursos = async (req: Request, res: Response): Promise<any> => {
     try {
-        const cursos = await cursoRepo.find({ relations: ["gradoCiclo", "catedratico"] });
+        const cursos = await cursoRepo.find({ 
+            relations: ["gradoCiclo", "catedratico", "gradoCiclo.ciclo", "catedratico.usuario"] 
+        });
         return res.status(200).json({ message: "Cursos obtenidos exitosamente", cursos });
     } catch (error) {
         console.error("Error obteniendo cursos:", error);
@@ -21,7 +23,15 @@ export const getAllCursos = async (req: Request, res: Response): Promise<any> =>
 export const getCurso = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id }: any = req.params;
-        const curso = await cursoRepo.findOne({ where: { id: Number(id) }, relations: ["gradoCiclo", "catedratico"] });
+        const curso = await cursoRepo.findOne({ 
+            where: { id: Number(id) }, 
+            relations: [
+                "gradoCiclo",
+                "gradoCiclo.ciclo",
+                "catedratico",
+                "catedratico.usuario"
+            ]
+        });
         if (!curso) {
             return res.status(404).json({ message: "Curso no encontrado" });
         }
