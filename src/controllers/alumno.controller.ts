@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../config/data-source";
 import { Alumno } from "../models/Alumno";
 import { Responsable } from "../models/Responsable";
-import { Any, EntityNotFoundError, QueryFailedError } from "typeorm";
+import { EntityNotFoundError, QueryFailedError } from "typeorm";
 import { TipoParentesco } from "../models/TipoParentesco";
 import { TipoParentescoNotFoundError } from "../errors/alumno.errors";
 
@@ -82,16 +82,26 @@ const generarResponsables = async (responsables: Responsable[], alumno: Alumno) 
 
 export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> => {
     try {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
         const search = req.query.search as string || '';
-        const skip = (page - 1) * limit;
-
+        const pageParam = req.query.page as string;
+        const limitParam = req.query.limit as string;
+        
+        // Verificar si se solicitó paginación
+        const isPaginated = pageParam !== undefined && limitParam !== undefined;
+        const page = isPaginated ? parseInt(pageParam) || 1 : null;
+        const limit = isPaginated ? parseInt(limitParam) || 10 : null;
+        
         // Crear un query builder para mayor flexibilidad
         let queryBuilder = Alumno.createQueryBuilder("alumno")
-            .leftJoinAndSelect("alumno.responsables", "responsables")
-            .skip(skip)
-            .take(limit);
+            .leftJoinAndSelect("alumno.responsables", "responsables");
+            
+        // Aplicar paginación solo si se proporcionaron los parámetros
+        if (isPaginated) {
+            const skip = (page! - 1) * limit!;
+            queryBuilder = queryBuilder
+                .skip(skip)
+                .take(limit!);
+        }
 
         // Agregar condición de búsqueda si se proporciona un término
         if (search && search.trim() !== '') {
@@ -126,13 +136,20 @@ export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> 
         // Ejecutar la consulta
         const [alumnos, total] = await queryBuilder.getManyAndCount();
 
-        return resp.status(200).json({ 
+        // Construir la respuesta según si está paginada o no
+        const response: any = { 
             message: "Alumnos encontrados", 
             alumnos,
-            total,
-            page,
-            totalPages: Math.ceil(total / limit),
-        });
+            total
+        };
+        
+        // Agregar información de paginación solo si se solicitó
+        if (isPaginated && limit !== null) {
+            response.page = page;
+            response.totalPages = Math.ceil(total / limit);
+        }
+
+        return resp.status(200).json(response);
     } catch (error) {
         console.error("Error fetching alumnos:", error);
         return resp.status(500).json({ message: "Internal server error" });
@@ -216,6 +233,8 @@ export const modificarAlumno = async (req: Request, resp: Response): Promise<any
         await Promise.all(
             responsablesEliminar.map(r => queryRunner.manager.remove(r))
         );
+
+        await queryRunner.manager.save(alumnoExistente);
 
         await queryRunner.commitTransaction();
         return resp.status(200).send({ message: "Alumno modificado con exito" })

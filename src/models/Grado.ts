@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, BaseEntity } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, BaseEntity, OneToMany } from "typeorm";
 import { NivelAcademico } from "./NivelAcademico";
 import { Jornada } from "./Jornada";
+import { GradoCiclo } from "./GradoCiclo";
 
 @Entity({ name: "grado" })
 export class Grado extends BaseEntity {
@@ -32,4 +33,7 @@ export class Grado extends BaseEntity {
 
     @DeleteDateColumn({ name: "deleted_at" })
     deletedAt?: Date;
+
+    @OneToMany(() => GradoCiclo, gradoCiclo => gradoCiclo.grado)
+    gradosCiclo: GradoCiclo[];
 }

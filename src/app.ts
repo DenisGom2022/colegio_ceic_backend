@@ -10,7 +10,7 @@ import { nivelAcademicoRoute } from './routes/nivelAcademico.routes';
 import { jornadaRoute } from './routes/jornada.routes';
 import { gradoRoute } from './routes/grado.routes';
 import { gradoCicloRoute } from './routes/gradoCiclo.routes';
-import { asignacionCatedraticoRoute } from './routes/asignacionCatedratico.routes';
+// import { asignacionCatedraticoRoute } from './routes/asignacionCatedratico.routes';
 import tipoParentescoRoute from './routes/tipoParentesco.routes';
 
 
@@ -27,5 +27,5 @@ app.use("/nivel-academico", nivelAcademicoRoute);
 app.use("/jornada", jornadaRoute);
 app.use("/grado", gradoRoute);
 app.use("/grado-ciclo", gradoCicloRoute);
-app.use("/asignacion-catedratico", asignacionCatedraticoRoute);
+// app.use("/asignacion-catedratico", asignacionCatedraticoRoute);
 app.use("/tipo-parentesco", tipoParentescoRoute);

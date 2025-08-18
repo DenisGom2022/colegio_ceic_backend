@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { GradoCiclo } from "./GradoCiclo";
+import { Catedratico } from "./Catedratico";
 
 @Entity({ name: "curso" })
 export class Curso {
@@ -7,6 +9,26 @@ export class Curso {
 
     @Column({ name: "nombre", type: "varchar", length: 255 })
     nombre: string;
+
+    @Column({ name: "nota_maxima", type: "int" })
+    notaMaxima: number;
+
+    @Column({ name: "nota_aprobada", type: "int" })
+    notaAprobada: number;
+
+    @Column({ name: "id_grado_ciclo", type: "int" })
+    idGradoCiclo: number;
+
+    @Column({ name: "dpi_catedratico", type: "int" })
+    dpiCatedratico: number;
+
+    @ManyToOne(() => GradoCiclo)
+    @JoinColumn({ name: "id_grado_ciclo" })
+    gradoCiclo: GradoCiclo;
+
+    @ManyToOne(() => Catedratico)
+    @JoinColumn({ name: "dpi_catedratico" })
+    catedratico: Catedratico;
 
     @CreateDateColumn({ name: "created_at" })
     createdAt: Date;

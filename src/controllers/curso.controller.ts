@@ -1,13 +1,16 @@
 import { Request, Response } from "express";
 import { Curso } from "../models/Curso";
 import { AppDataSource } from "../config/data-source";
-import { EntityNotFoundError } from "typeorm";
+import { EntityNotFoundError, QueryFailedError } from "typeorm";
+import { Ciclo } from "../models/Ciclo";
+import { GradoCiclo } from "../models/GradoCiclo";
+import { IsNull } from "typeorm";
 
 const cursoRepo = AppDataSource.getRepository(Curso);
 
 export const getAllCursos = async (req: Request, res: Response): Promise<any> => {
     try {
-        const cursos = await cursoRepo.find();
+        const cursos = await cursoRepo.find({ relations: ["gradoCiclo", "catedratico"] });
         return res.status(200).json({ message: "Cursos obtenidos exitosamente", cursos });
     } catch (error) {
         console.error("Error obteniendo cursos:", error);
@@ -18,12 +21,12 @@ export const getAllCursos = async (req: Request, res: Response): Promise<any> =>
 export const getCurso = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id }: any = req.params;
-        const curso = await cursoRepo.findOneByOrFail({ id: Number(id) });
-        return res.status(200).json({ message: "Curso obtenido exitosamente", curso });
-    } catch (error) {
-        if (error instanceof EntityNotFoundError) {
+        const curso = await cursoRepo.findOne({ where: { id: Number(id) }, relations: ["gradoCiclo", "catedratico"] });
+        if (!curso) {
             return res.status(404).json({ message: "Curso no encontrado" });
         }
+        return res.status(200).json({ message: "Curso obtenido exitosamente", curso });
+    } catch (error) {
         console.error("Error obteniendo curso:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
@@ -31,15 +34,46 @@ export const getCurso = async (req: Request, res: Response): Promise<any> => {
 
 export const crearCurso = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { nombre } = req.body;
-        const cursoExistente = await cursoRepo.findOne({ where: { nombre } });
-        if (cursoExistente) {
-            return res.status(400).json({ message: "Ya existe un curso con ese nombre" });
+        const { nombre, notaMaxima, notaAprobada, idGrado, dpiCatedratico } = req.body;
+        // Usar entidades directamente para los repositorios
+        const cicloRepo = AppDataSource.getRepository(Ciclo);
+        const gradoCicloRepo = AppDataSource.getRepository(GradoCiclo);
+        // Buscar ciclo activo (fechaFin == null)
+        const cicloActivo = await cicloRepo.findOne({ where: { fechaFin: IsNull() } });
+        if (!cicloActivo) {
+            return res.status(404).json({ message: "No hay ciclo activo" });
         }
-        const curso = cursoRepo.create({ nombre });
+        // Buscar relación grado-ciclo activo
+        const gradoCiclo = await gradoCicloRepo.findOne({ where: { grado: { id: idGrado }, ciclo: { id: cicloActivo.id } } });
+        if (!gradoCiclo) {
+            return res.status(404).json({ message: "El grado no está relacionado al ciclo activo" });
+        }
+        // Verificar si ya existe el curso en ese gradoCiclo
+        const cursoExistente = await cursoRepo.findOne({
+            where: {
+                nombre,
+                gradoCiclo: { id: gradoCiclo.id }
+            }
+        });
+        if (cursoExistente) {
+            return res.status(400).json({ message: "Ya existe un curso con ese nombre en el grado para el ciclo activo" });
+        }
+        // Crear el curso usando el gradoCiclo encontrado
+        const curso = cursoRepo.create({ nombre, notaMaxima, notaAprobada, idGradoCiclo: gradoCiclo.id, dpiCatedratico });
         await cursoRepo.save(curso);
         return res.status(201).json({ message: "Curso creado exitosamente", curso });
-    } catch (error) {
+    } catch (error:any) {
+        if (error instanceof QueryFailedError) {
+            const { errno, sqlMessage } = error.driverError || {};
+            if (errno === 1452 && sqlMessage?.includes("FK_curso_gradoCiclo")) {
+                return res.status(404).json({ message: "El gradoCiclo no existe" });
+            }
+            if (errno === 1452 && sqlMessage?.includes("FK_curso_catedratico")) {
+                return res.status(404).json({ message: "El catedratico no existe" });
+            }
+            console.log("Error en BD al modificar usuario: ", error);
+            return res.status(500).json({ message: "Error en BD al modificar usuario" });
+        }
         console.error("Error creando curso:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
@@ -47,9 +81,13 @@ export const crearCurso = async (req: Request, res: Response): Promise<any> => {
 
 export const modificarCurso = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { id, nombre } = req.body;
-        const curso = await cursoRepo.findOneByOrFail({ id: Number(id) });
-        curso.nombre = nombre;
+        const { id, nombre, notaMaxima, notaAprobada, idGradoCiclo, dpiCatedratico } = req.body;
+        const curso = await cursoRepo.findOneByOrFail({ id });
+        curso.nombre = nombre ?? curso.nombre;
+        curso.notaMaxima = notaMaxima ?? curso.notaMaxima;
+        curso.notaAprobada = notaAprobada ?? curso.notaAprobada;
+        curso.idGradoCiclo = idGradoCiclo ?? curso.idGradoCiclo;
+        curso.dpiCatedratico = dpiCatedratico ?? curso.dpiCatedratico;
         await cursoRepo.save(curso);
         return res.status(200).json({ message: "Curso modificado exitosamente", curso });
     } catch (error) {

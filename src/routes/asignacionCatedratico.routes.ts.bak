@@ -1,5 +1,5 @@
-import { Router } from "express";
-import { getAllAsignaciones, getAsignacion, crearAsignacion, modificarAsignacion, eliminarAsignacion } from "../controllers/asignacionCatedratico.controller";
+/*import { Router } from "express";
+import { getAllAsignaciones, getAsignacion, crearAsignacion, modificarAsignacion, eliminarAsignacion } from "../controllers/asignacionCatedratico.controller.ts";
 import { validarDatos } from "../middlewares/validator.middleware";
 import { authWithRoles } from "../middlewares/auth.middleware";
 import { ROLES } from "../utils/roles";
@@ -11,4 +11,4 @@ asignacionCatedraticoRoute.get("/", authWithRoles([ROLES.ADMIN]), getAllAsignaci
 asignacionCatedraticoRoute.get("/:id", authWithRoles([ROLES.ADMIN]), getAsignacion);
 asignacionCatedraticoRoute.post("/", authWithRoles([ROLES.ADMIN]), asignacionCatedraticoValidator, validarDatos, crearAsignacion);
 asignacionCatedraticoRoute.put("/", authWithRoles([ROLES.ADMIN]), modificarAsignacionCatedraticoValidator, validarDatos, modificarAsignacion);
-asignacionCatedraticoRoute.delete("/:id", authWithRoles([ROLES.ADMIN]), eliminarAsignacion);
+asignacionCatedraticoRoute.delete("/:id", authWithRoles([ROLES.ADMIN]), eliminarAsignacion);*/

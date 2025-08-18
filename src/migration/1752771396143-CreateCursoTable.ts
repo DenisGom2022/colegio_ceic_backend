@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from "typeorm";
 
-export class CreateAsignacionCatedraticoTable1752774210923 implements MigrationInterface {
+export class CreateCursoTable1752707483237 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
-                name: "asignacion_catedratico",
+                name: "curso",
                 columns: [
                     {
                         name: "id",
@@ -15,18 +15,9 @@ export class CreateAsignacionCatedraticoTable1752774210923 implements MigrationI
                         generationStrategy: "increment",
                     },
                     {
-                        name: "id_grado_ciclo",
-                        type: "int",
-                        isNullable: false,
-                    },
-                    {
-                        name: "id_catedratico",
-                        type: "nvarchar",
-                        isNullable: false,
-                    },
-                    {
-                        name: "id_curso",
-                        type: "int",
+                        name: "nombre",
+                        type: "varchar",
+                        length: "255",
                         isNullable: false,
                     },
                     {
@@ -37,6 +28,16 @@ export class CreateAsignacionCatedraticoTable1752774210923 implements MigrationI
                     {
                         name: "nota_aprobada",
                         type: "int",
+                        isNullable: false,
+                    },
+                    {
+                        name: "id_grado_ciclo",
+                        type: "int",
+                        isNullable: false,
+                    },
+                    {
+                        name: "dpi_catedratico",
+                        type: "nvarchar",
                         isNullable: false,
                     },
                     {
@@ -58,40 +59,26 @@ export class CreateAsignacionCatedraticoTable1752774210923 implements MigrationI
                 ],
             })
         );
-        await queryRunner.createForeignKey(
-            "asignacion_catedratico",
-            new TableForeignKey({
-                columnNames: ["id_grado_ciclo"],
-                referencedTableName: "grado_ciclo",
-                referencedColumnNames: ["id"],
-                onDelete: "CASCADE",
-                name: "FK_asignacionCatedratico_gradoCiclo"
-            })
-        );
-        await queryRunner.createForeignKey(
-            "asignacion_catedratico",
-            new TableForeignKey({
-                columnNames: ["id_catedratico"],
-                referencedTableName: "catedratico",
-                referencedColumnNames: ["dpi"],
-                onDelete: "CASCADE",
-                name: "FK_asignacionCatedratico_catedratico"
-            })
-        );
-        await queryRunner.createForeignKey(
-            "asignacion_catedratico",
-            new TableForeignKey({
-                columnNames: ["id_curso"],
-                referencedTableName: "curso",
-                referencedColumnNames: ["id"],
-                onDelete: "CASCADE",
-                name: "FK_asignacionCatedratico_curso"
-            })
-        );
+
+        await queryRunner.createForeignKey("curso", new TableForeignKey({
+            columnNames: ["id_grado_ciclo"],
+            referencedTableName: "grado_ciclo",
+            referencedColumnNames: ["id"],
+            onDelete: "CASCADE",
+            name: "FK_curso_gradoCiclo"
+        }));
+
+        await queryRunner.createForeignKey("curso", new TableForeignKey({
+            columnNames: ["dpi_catedratico"],
+            referencedTableName: "catedratico",
+            referencedColumnNames: ["dpi"],
+            onDelete: "CASCADE",
+            name: "FK_curso_catedratico"
+        }))
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.dropTable("asignacion_catedratico");
+        await queryRunner.dropTable("curso");
     }
 
 }
