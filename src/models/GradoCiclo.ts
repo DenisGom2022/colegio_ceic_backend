@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from "typeorm";
 import { Grado } from "./Grado";
 import { Ciclo } from "./Ciclo";
+import { Curso } from "./Curso";
 
 @Entity({ name: "grado_ciclo" })
 export class GradoCiclo {
@@ -38,4 +39,7 @@ export class GradoCiclo {
     @ManyToOne(() => Ciclo)
     @JoinColumn({ name: "id_ciclo" })
     ciclo: Ciclo;
+
+    @OneToMany(() => Curso, (curso) => curso.gradoCiclo)
+    cursos: Curso[];
 }

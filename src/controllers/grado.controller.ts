@@ -77,9 +77,37 @@ export const getGrado = async (req: Request, res: Response): Promise<any> => {
         const { id }: any = req.params;
         const grado = await Grado.findOneOrFail({ 
             where: { id: Number(id) }, 
-            relations: ["nivelAcademico", "jornada", "gradosCiclo", "gradosCiclo.ciclo"] 
+            relations: [
+                "nivelAcademico", 
+                "jornada", 
+                "gradosCiclo", 
+                "gradosCiclo.ciclo", 
+                "gradosCiclo.cursos",
+                "gradosCiclo.cursos.catedratico"
+            ] 
         });
-        return res.status(200).json({ message: "Grado obtenido exitosamente", grado });
+
+        // Separar ciclos activos y finalizados
+        const ciclosActivos = [];
+        const ciclosFinalizados = [];
+        for (const gc of grado.gradosCiclo) {
+            if (gc.ciclo && gc.ciclo.fechaFin === null) {
+                ciclosActivos.push(gc);
+            } else {
+                ciclosFinalizados.push(gc);
+            }
+        }
+        // Crear un nuevo objeto para la respuesta sin mutar el grado original
+        const gradoResponse = {
+            ...grado,
+            gradosCiclo: undefined,
+            ciclosActivos,
+            ciclosFinalizados
+        };
+        return res.status(200).json({ 
+            message: "Grado obtenido exitosamente", 
+            grado: gradoResponse
+        });
     } catch (error) {
         if (error instanceof EntityNotFoundError) {
             return res.status(404).json({ message: "Grado no encontrado" });

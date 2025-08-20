@@ -1,5 +1,6 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Unique, OneToOne, JoinColumn, Index, BaseEntity } from "typeorm";
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Unique, OneToOne, JoinColumn, Index, BaseEntity, OneToMany } from "typeorm";
 import { Usuario } from "./Usuario";
+import { Curso } from "./Curso";
 
 @Entity("catedratico")
 export class Catedratico extends BaseEntity {
@@ -13,6 +14,9 @@ export class Catedratico extends BaseEntity {
     @OneToOne(() => Usuario, usuario => usuario.usuario, { eager: true })
     @JoinColumn({ name:"id_usuario" })
     usuario:Usuario;
+
+    @OneToMany(() => Curso, (curso) => curso.catedratico)
+    cursos: Curso[];
 
     @CreateDateColumn({ name:"created_at", type: "timestamp" })
     createdAt: Date;

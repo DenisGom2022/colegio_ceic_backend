@@ -107,7 +107,14 @@ export const getCatedratico = async (req: Request, resp: Response): Promise<any>
         const { dpi } = req.params;
 
         // Verificar si el usuario ya existe
-        const existingCatedratico = await Catedratico.findOneOrFail({ where: { dpi } });
+        const existingCatedratico = await Catedratico.findOneOrFail({ 
+            where: { dpi },
+            relations: {
+                cursos: {
+                    gradoCiclo: true
+                }
+            }
+        });
         console.log("dpi", dpi);
         console.log("existingCatedratico", existingCatedratico);
         const usuario = existingCatedratico.usuario;
