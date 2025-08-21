@@ -23,6 +23,12 @@ export const getAllGrados = async (req: Request, res: Response): Promise<any> =>
             .leftJoinAndSelect("grado.gradosCiclo", "gradosCiclo")
             .leftJoinAndSelect("gradosCiclo.ciclo", "ciclo");
             
+        // Ordenar por jornada y nivel académico (y por nombre de grado como tercero)
+        queryBuilder = queryBuilder
+            .orderBy("jornada.descripcion", "ASC")
+            .addOrderBy("nivelAcademico.descripcion", "ASC")
+            .addOrderBy("grado.nombre", "ASC");
+            
         // Aplicar paginación solo si se proporcionaron los parámetros
         if (isPaginated && page !== null && limit !== null) {
             const skip = (page - 1) * limit;
