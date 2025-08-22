@@ -106,24 +106,51 @@ export const getCatedratico = async (req: Request, resp: Response): Promise<any>
     try {
         const { dpi } = req.params;
 
-        // Verificar si el usuario ya existe
+        // Buscar el catedrático incluyendo la relación del ciclo dentro de gradoCiclo
         const existingCatedratico = await Catedratico.findOneOrFail({ 
             where: { dpi },
             relations: {
                 cursos: {
-                    gradoCiclo: true
+                    gradoCiclo: {
+                        ciclo: true,
+                        grado: {
+                            jornada: true,
+                            nivelAcademico: true
+                        }
+                    }
                 }
             }
         });
-        console.log("dpi", dpi);
-        console.log("existingCatedratico", existingCatedratico);
+
+        // Separar cursos por ciclo activo (fechaFin === null) y ciclos finalizados
+        const cursosActivos: any[] = [];
+        const cursosFinalizados: any[] = [];
+
+        for (const curso of existingCatedratico.cursos || []) {
+            const ciclo = curso.gradoCiclo?.ciclo;
+            if (ciclo && ciclo.fechaFin === null) {
+                cursosActivos.push(curso);
+            } else {
+                cursosFinalizados.push(curso);
+            }
+        }
+
+        // Eliminar la contraseña del usuario antes de devolver la respuesta
         const usuario = existingCatedratico.usuario;
-        const { contrasena, ...usuarioWhitoutPassword } = usuario;
-        const catedraticoWhitoutPassword = {...existingCatedratico, usuario:usuarioWhitoutPassword};
+        const { contrasena, ...usuarioWhitoutPassword } = usuario || {};
+
+        // Construir objeto de respuesta sin exponer la contraseña ni la lista original de cursos
+        const catedraticoWhitoutPassword = {
+            ...existingCatedratico,
+            usuario: usuarioWhitoutPassword,
+            cursos: undefined // evitar devolver la lista original completa
+        };
 
         return resp.status(200).json({
             message: "Catedrático encontrado exitosamente",
-            catedratico: catedraticoWhitoutPassword
+            catedratico: catedraticoWhitoutPassword,
+            cursosActivos,
+            cursosFinalizados
         });
     } catch (error) {
         if (error instanceof EntityNotFoundError) {
