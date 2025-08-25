@@ -10,9 +10,14 @@ const cursoRepo = AppDataSource.getRepository(Curso);
 
 export const getAllCursos = async (req: Request, res: Response): Promise<any> => {
     try {
-        const cursos = await cursoRepo.find({ 
-            relations: ["gradoCiclo", "catedratico", "gradoCiclo.ciclo", "catedratico.usuario"] 
-        });
+        // Usar el repositorio para crear el query builder y ordenar por fechaFin de ciclo
+        const cursos = await cursoRepo.createQueryBuilder("curso")
+            .leftJoinAndSelect("curso.gradoCiclo", "gradoCiclo")
+            .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
+            .leftJoinAndSelect("curso.catedratico", "catedratico")
+            .leftJoinAndSelect("catedratico.usuario", "usuario")
+            .orderBy("ciclo.fechaFin", "ASC")
+            .getMany();
         return res.status(200).json({ message: "Cursos obtenidos exitosamente", cursos });
     } catch (error) {
         console.error("Error obteniendo cursos:", error);
