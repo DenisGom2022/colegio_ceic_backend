@@ -12,6 +12,7 @@ import { gradoRoute } from './routes/grado.routes';
 import { gradoCicloRoute } from './routes/gradoCiclo.routes';
 // import { asignacionCatedraticoRoute } from './routes/asignacionCatedratico.routes';
 import tipoParentescoRoute from './routes/tipoParentesco.routes';
+import { tareaRouter } from './routes/tarea.route';
 
 
 export const app = express();
@@ -29,3 +30,4 @@ app.use("/grado", gradoRoute);
 app.use("/grado-ciclo", gradoCicloRoute);
 // app.use("/asignacion-catedratico", asignacionCatedraticoRoute);
 app.use("/tipo-parentesco", tipoParentescoRoute);
+app.use("/tarea", tareaRouter);

@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn, OneToMany, BaseEntity } from "typeorm";
 import { GradoCiclo } from "./GradoCiclo";
 import { Catedratico } from "./Catedratico";
+import { Tarea } from "./Tarea";
 
 @Entity({ name: "curso" })
-export class Curso {
+export class Curso extends BaseEntity {
     @PrimaryGeneratedColumn({ name: "id" })
     id: number;
 
@@ -29,6 +30,9 @@ export class Curso {
     @ManyToOne(() => Catedratico)
     @JoinColumn({ name: "dpi_catedratico" })
     catedratico: Catedratico;
+
+    @OneToMany(() => Tarea, tarea => tarea.curso)
+    tareas:Tarea[];
 
     @CreateDateColumn({ name: "created_at" })
     createdAt: Date;

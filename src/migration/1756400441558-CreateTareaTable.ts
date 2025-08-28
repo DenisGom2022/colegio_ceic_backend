@@ -1,0 +1,83 @@
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from "typeorm";
+
+export class CreateTareaTable1756400441558 implements MigrationInterface {
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.createTable(
+            new Table({
+                name: "tarea",
+                columns: [
+                    {
+                        name: "id",
+                        type: "int",
+                        isPrimary: true,
+                        isGenerated: true,
+                        generationStrategy: "increment",
+                    },
+                    {
+                        name: "descripcion",
+                        type: "varchar",
+                        length: "100",
+                        isNullable: false,
+                    },
+                    {
+                        name: "nota",
+                        type: "int",
+                        isNullable: false,
+                    },
+                    {
+                        name: "fecha_entrega",
+                        type: "datetime",
+                        isNullable: false,
+                    },
+                    {
+                        name: "id_curso",
+                        type: "int",
+                        isNullable: false,
+                    },
+                    {
+                        name: "created_at",
+                        type: "datetime",
+                        default: "CURRENT_TIMESTAMP",
+                    },
+                    {
+                        name: "updated_at",
+                        type: "datetime",
+                        default: "CURRENT_TIMESTAMP",
+                        onUpdate: "CURRENT_TIMESTAMP",
+                    },
+                    {
+                        name: "deleted_at",
+                        type: "datetime",
+                        isNullable: true,
+                    },
+                ],
+            })
+
+        );
+
+        await queryRunner.createForeignKey(
+            "tarea",
+            new TableForeignKey({
+                columnNames: ["id_curso"],
+                referencedTableName: "curso",
+                referencedColumnNames: ["id"],
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE"
+            })
+        );
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        // Eliminar la foreign key de id_curso en la tabla tarea
+        const table = await queryRunner.getTable("tarea");
+        if (table) {
+            const foreignKey = table.foreignKeys.find(fk => fk.columnNames.indexOf("id_curso") !== -1);
+            if (foreignKey) {
+                await queryRunner.dropForeignKey("tarea", foreignKey);
+            }
+            await queryRunner.dropTable("tarea");
+        }
+    }
+
+}

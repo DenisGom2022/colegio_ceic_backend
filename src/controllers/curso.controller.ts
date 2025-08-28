@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import { Curso } from "../models/Curso";
 import { AppDataSource } from "../config/data-source";
-import { EntityNotFoundError, QueryFailedError } from "typeorm";
+import { EntityNotFoundError, QueryFailedError, Tree } from "typeorm";
 import { Ciclo } from "../models/Ciclo";
 import { GradoCiclo } from "../models/GradoCiclo";
 import { IsNull } from "typeorm";
+import { JwtPayload } from "../interfaces/interfaces";
+import { Catedratico } from "../models/Catedratico";
 
 const cursoRepo = AppDataSource.getRepository(Curso);
 
@@ -21,6 +23,86 @@ export const getAllCursos = async (req: Request, res: Response): Promise<any> =>
         return res.status(200).json({ message: "Cursos obtenidos exitosamente", cursos });
     } catch (error) {
         console.error("Error obteniendo cursos:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+interface getAllMisCursosResponse {
+    message:string;
+    cursos: Curso[];
+    esCatedratico: boolean;
+}
+
+export const getAllMisCursos = async (req: Request, res: Response<getAllMisCursosResponse>): Promise<any> => {
+    try {
+        const valorToken:JwtPayload = (req as any).valorToken;
+        const catedratico = await Catedratico.findOneBy({idUsuario:valorToken?.usuario?.usuario});
+        if(!catedratico){
+            return res.status(200).json({ message: "Usuario no es profesor", cursos:[], esCatedratico: false })
+        }
+        // Usar el repositorio para crear el query builder y ordenar por fechaFin de ciclo
+        const cursos = await cursoRepo.createQueryBuilder("curso")
+            .leftJoinAndSelect("curso.gradoCiclo", "gradoCiclo")
+            .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
+            .leftJoinAndSelect("gradoCiclo.grado", "grado")
+            .leftJoinAndSelect("grado.jornada", "jornada")
+            .leftJoinAndSelect("grado.nivelAcademico", "nivelAcademico")
+            .leftJoinAndSelect("curso.catedratico", "catedratico")
+            .leftJoinAndSelect("catedratico.usuario", "usuario")
+            .where("curso.dpiCatedratico = :dpiCatedratico", {dpiCatedratico: catedratico.dpi})
+            .orderBy("ciclo.fechaFin", "ASC")
+            .getMany();
+        return res.status(200).json({ message: "Cursos obtenidos exitosamente", cursos, esCatedratico: true });
+    } catch (error) {
+        console.error("Error obteniendo cursos:", error);
+        return res.status(500).json({ message: "Internal server error", cursos: [], esCatedratico: false });
+    }
+};
+
+export const getMiCurso = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id }: any = req.params;
+        const valorToken:JwtPayload = (req as any).valorToken;
+        const catedratico = await Catedratico.findOneBy({idUsuario:valorToken?.usuario?.usuario});
+        if(!catedratico){
+            return res.status(404).json({ message: "Usuario no es profesor" })
+        }
+        const curso = await cursoRepo.createQueryBuilder("curso")
+            .leftJoinAndSelect("curso.gradoCiclo", "gradoCiclo")
+            .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
+            .leftJoinAndSelect("gradoCiclo.grado", "grado")
+            .leftJoinAndSelect("grado.nivelAcademico", "nivelAcademico")
+            .leftJoinAndSelect("grado.jornada", "jornada")
+            .leftJoinAndSelect("curso.catedratico", "catedratico")
+            .leftJoinAndSelect("catedratico.usuario", "usuario")
+            .leftJoinAndSelect("usuario.tipoUsuario", "tipoUsuario")
+            .addSelect([
+                "usuario.usuario",
+                "usuario.primerNombre",
+                "usuario.segundoNombre",
+                "usuario.tercerNombre",
+                "usuario.primerApellido",
+                "usuario.segundoApellido",
+                "usuario.idTipoUsuario",
+                "usuario.telefono",
+                "usuario.cambiarContrasena",
+                "usuario.createdAt",
+                "usuario.updatedAt",
+                "usuario.deletedAt"
+            ])
+            .where("curso.id = :id", { id: Number(id) })
+            .getOneOrFail();
+
+        if (!curso || !curso.catedratico || !curso.catedratico.usuario || curso.catedratico.usuario.usuario != valorToken?.usuario?.usuario ) {
+            return res.status(400).json({ message: "Curso no le pertenece" });
+        }
+        return res.status(200).json({ message: "Curso obtenido exitosamente", curso });
+    } catch (error) {
+        if(error instanceof EntityNotFoundError){
+            return res.status(404).json({ message: "Curso no existe" })
+        }
+        console.error("Error obteniendo curso:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
@@ -96,18 +178,45 @@ export const crearCurso = async (req: Request, res: Response): Promise<any> => {
 
 export const modificarCurso = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { id, nombre, notaMaxima, notaAprobada, idGradoCiclo, dpiCatedratico } = req.body;
+        const { id, nombre, notaMaxima, notaAprobada, idGrado, dpiCatedratico } = req.body;
+        // Buscar el curso por id
         const curso = await cursoRepo.findOneByOrFail({ id });
+
+        // Buscar ciclo activo (fechaFin == null)
+        const cicloRepo = AppDataSource.getRepository(Ciclo);
+        const gradoCicloRepo = AppDataSource.getRepository(GradoCiclo);
+        const cicloActivo = await cicloRepo.findOne({ where: { fechaFin: IsNull() } });
+        if (!cicloActivo) {
+            return res.status(404).json({ message: "No hay ciclo activo" });
+        }
+        // Buscar relación grado-ciclo activo
+        const gradoCiclo = await gradoCicloRepo.findOne({ where: { grado: { id: idGrado }, ciclo: { id: cicloActivo.id } } });
+        if (!gradoCiclo) {
+            return res.status(404).json({ message: "El grado no está relacionado al ciclo activo" });
+        }
+
+        // Actualizar los campos
         curso.nombre = nombre ?? curso.nombre;
         curso.notaMaxima = notaMaxima ?? curso.notaMaxima;
         curso.notaAprobada = notaAprobada ?? curso.notaAprobada;
-        curso.idGradoCiclo = idGradoCiclo ?? curso.idGradoCiclo;
+        curso.idGradoCiclo = gradoCiclo.id;
         curso.dpiCatedratico = dpiCatedratico ?? curso.dpiCatedratico;
         await cursoRepo.save(curso);
         return res.status(200).json({ message: "Curso modificado exitosamente", curso });
     } catch (error) {
         if (error instanceof EntityNotFoundError) {
             return res.status(404).json({ message: "Curso no encontrado" });
+        }
+        if (error instanceof QueryFailedError) {
+            const { errno, sqlMessage } = error.driverError || {};
+            if (errno === 1452 && sqlMessage?.includes("FK_curso_gradoCiclo")) {
+                return res.status(404).json({ message: "El gradoCiclo no existe" });
+            }
+            if (errno === 1452 && sqlMessage?.includes("FK_curso_catedratico")) {
+                return res.status(404).json({ message: "El catedratico no existe" });
+            }
+            console.log("Error en BD al modificar usuario: ", error);
+            return res.status(500).json({ message: "Error en BD al modificar usuario" });
         }
         console.error("Error modificando curso:", error);
         return res.status(500).json({ message: "Internal server error" });
