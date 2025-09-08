@@ -15,13 +15,19 @@ export class CreateTareaTable1756400441558 implements MigrationInterface {
                         generationStrategy: "increment",
                     },
                     {
-                        name: "descripcion",
+                        name: "titulo",
                         type: "varchar",
                         length: "100",
+                        isNullable: false
+                    },
+                    {
+                        name: "descripcion",
+                        type: "varchar",
+                        length: "255",
                         isNullable: false,
                     },
                     {
-                        name: "nota",
+                        name: "punteo",
                         type: "int",
                         isNullable: false,
                     },

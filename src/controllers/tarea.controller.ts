@@ -60,7 +60,7 @@ export const getAllMisTareas = async (req: Request, res: Response): Promise<any>
 
 export const createTarea = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { descripcion, nota, fechaEntrega, idCurso } = req.body;
+        const { titulo, descripcion, punteo, fechaEntrega, idCurso } = req.body;
         const valorToken: JwtPayload = (req as any).valorToken;
 
         const curso = await Curso.findOne({
@@ -73,14 +73,15 @@ export const createTarea = async (req: Request, res: Response): Promise<any> => 
         });
         if (!curso) return res.status(404).send({ message: "Curso no existe" });
         if (curso?.gradoCiclo?.ciclo?.fechaFin != null) return res.status(400).send({ message: "Curso ya finalizado, no se pueden agregar tareas" });
-        if (nota > curso.notaMaxima) return res.status(400).send({ message: `La nota no puede ser mayor a la nota máxima del curso (${curso.notaMaxima})` });
+        if (punteo > curso.notaMaxima) return res.status(400).send({ message: `La nota no puede ser mayor a la nota máxima del curso (${curso.notaMaxima})` });
         if (valorToken.role == ROLES.DOCENTE && curso?.catedratico?.usuario?.usuario != valorToken?.usuario?.usuario) {
             return res.status(400).send({ message: "Este curso no le pertenece" });
         }
 
         const tarea = new Tarea();
+        tarea.titulo = titulo;
         tarea.descripcion = descripcion;
-        tarea.nota = nota;
+        tarea.punteo = punteo;
         tarea.fechaEntrega = fechaEntrega;
         tarea.idCurso = idCurso;
 

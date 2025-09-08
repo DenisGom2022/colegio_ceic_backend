@@ -6,11 +6,14 @@ export class Tarea extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column({ name: "descripcion", type: "varchar", length: 100 })
+    @Column({ name: "titulo", type: "varchar", length: 100 })
+	titulo: string;
+
+	@Column({ name: "descripcion", type: "varchar", length: 255 })
 	descripcion: string;
 
-	@Column({ name: "nota" ,type: "int" })
-	nota: number;
+	@Column({ name: "punteo" ,type: "int" })
+	punteo: number;
 
 	@Column({ name:"fecha_entrega",  type: "datetime" })
 	fechaEntrega: Date;

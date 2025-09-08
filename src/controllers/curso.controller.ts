@@ -74,6 +74,7 @@ export const getMiCurso = async (req: Request, res: Response): Promise<any> => {
             .leftJoinAndSelect("gradoCiclo.grado", "grado")
             .leftJoinAndSelect("grado.nivelAcademico", "nivelAcademico")
             .leftJoinAndSelect("grado.jornada", "jornada")
+            .leftJoinAndSelect("curso.tareas", "tareas")
             .leftJoinAndSelect("curso.catedratico", "catedratico")
             .leftJoinAndSelect("catedratico.usuario", "usuario")
             .leftJoinAndSelect("usuario.tipoUsuario", "tipoUsuario")
