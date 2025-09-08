@@ -11,8 +11,6 @@ export class CreateCatEstadoBimestreTable1757113650106 implements MigrationInter
                         name: "id",
                         type: "int",
                         isPrimary: true,
-                        isGenerated: true,
-                        generationStrategy: "increment",
                     },
                     {
                         name: "descripcion",
@@ -42,10 +40,10 @@ export class CreateCatEstadoBimestreTable1757113650106 implements MigrationInter
 
         // Insertar datos iniciales
         await queryRunner.query(`
-            INSERT INTO cat_estado_bimestre (descripcion) VALUES
-            ('En espera'),
-            ('En curso'),
-            ('Finalizado')
+            INSERT INTO cat_estado_bimestre (id, descripcion) VALUES
+            (0, 'En espera'),
+            (1, 'En curso'),
+            (2, 'Finalizado')
         `);
     }
 
