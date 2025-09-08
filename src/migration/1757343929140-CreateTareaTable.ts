@@ -78,7 +78,7 @@ export class CreateTareaTable1757343929140 implements MigrationInterface {
             // Eliminar la foreign key de id_curso en la tabla tarea
             const table = await queryRunner.getTable("tarea");
             if (table) {
-                const foreignKey = table.foreignKeys.find(fk => fk.columnNames.indexOf("id_semestre") !== -1);
+                const foreignKey = table.foreignKeys.find(fk => fk.columnNames.indexOf("id_bimestre") !== -1);
                 if (foreignKey) {
                     await queryRunner.dropForeignKey("tarea", foreignKey);
                 }
