@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { GradoCiclo } from "./GradoCiclo";
 import { Catedratico } from "./Catedratico";
 import { Tarea } from "./Tarea";
+import { Bimestre } from "./Bimestre";
 
 @Entity({ name: "curso" })
 export class Curso extends BaseEntity {
@@ -31,7 +32,7 @@ export class Curso extends BaseEntity {
     @JoinColumn({ name: "dpi_catedratico" })
     catedratico: Catedratico;
 
-    @OneToMany(() => Tarea, tarea => tarea.curso)
+    @OneToMany(() => Bimestre, bimestre => bimestre.curso)
     tareas:Tarea[];
 
     @CreateDateColumn({ name: "created_at" })

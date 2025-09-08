@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 import { Curso } from "./Curso";
+import { Bimestre } from "./Bimestre";
 
 @Entity({ name: "tarea" })
 export class Tarea extends BaseEntity {
@@ -21,7 +22,7 @@ export class Tarea extends BaseEntity {
 	@Column({ name:"id_curso", type: "int" })
 	idCurso: number;
 
-	@ManyToOne(() => Curso, curso => curso.tareas, { onDelete: "CASCADE", onUpdate: "CASCADE" })
+	@ManyToOne(() => Bimestre, bimestre => bimestre.tareas, { onDelete: "CASCADE", onUpdate: "CASCADE" })
 	@JoinColumn({ name: "id_curso" })
 	curso: Curso;
 

@@ -15,6 +15,9 @@ export class Ciclo {
     @Column({ name: "fecha_fin", type:"date" })
     fechaFin: Date|null;
 
+    @Column({name:"cantidad_bimestre", type:"int"})
+    cantidadBimestres: number;
+
     @OneToMany(() => GradoCiclo, gradoCiclo => gradoCiclo.ciclo)
     gradosCiclo: GradoCiclo[];
 
