@@ -20,11 +20,6 @@ export class CreateCicloTable1752706638209 implements MigrationInterface {
                             isNullable: false,
                         },
                         {
-                            name: "cantidad_bimestre",
-                            type: "int",
-                            isNullable: false,
-                        },
-                        {
                             name: "created_at",
                             type: "datetime",
                             default: "CURRENT_TIMESTAMP",

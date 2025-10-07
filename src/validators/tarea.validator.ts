@@ -18,4 +18,7 @@ export const tareaValidator = [
     body('idCurso')
         .notEmpty().withMessage('El idCurso es obligatorio')
         .isInt().withMessage('El idCurso debe ser un número entero'),
+    body('nroBimestre')
+        .notEmpty().withMessage('El nroBimestre es obligatorio')
+        .isInt().withMessage('El nroBimestre debe ser un número entero'),
 ];

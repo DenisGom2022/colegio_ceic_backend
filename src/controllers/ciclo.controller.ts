@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Ciclo } from "../models/Ciclo";
 import { AppDataSource } from "../config/data-source";
 import { EntityNotFoundError, IsNull } from "typeorm";
+import { Bimestre } from "../models/Bimestre";
 
 const cicloRepo = AppDataSource.getRepository(Ciclo);
 
@@ -38,11 +39,14 @@ export const getCiclo = async (req: Request, res: Response): Promise<any> => {
                         nivelAcademico: true,
                         jornada: true
                     }
+                },
+                bimestres: {
+                    estado: true
                 }
             },
             order: {
                 createdAt: "DESC"
-            } 
+            }
         });
         return res.status(200).json({ message: "Ciclo obtenido exitosamente", ciclo });
     } catch (error) {
@@ -55,8 +59,11 @@ export const getCiclo = async (req: Request, res: Response): Promise<any> => {
 };
 
 export const crearCiclo = async (req: Request, res: Response): Promise<any> => {
+    const queryRunner = AppDataSource.createQueryRunner();
     try {
-        const { id, descripcion } = req.body;
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        const { id, cantidadBimestres, descripcion } = req.body;
 
         const existingCiclo = await cicloRepo.findOneBy({ id });
         if (existingCiclo) {
@@ -67,11 +74,24 @@ export const crearCiclo = async (req: Request, res: Response): Promise<any> => {
             return res.status(400).json({ message: "Ya se encuentra un ciclo activo, finalicelo para iniciar otro" });
         }
         const ciclo = cicloRepo.create({ id, descripcion });
-        await cicloRepo.save(ciclo);
+        await queryRunner.manager.save(ciclo);
+
+        for (let i = 0; i < cantidadBimestres; i++) {
+            const bimestre = new Bimestre();
+            bimestre.numeroBimestre = i + 1;
+            bimestre.idEstado = 0;
+            bimestre.fechaInicio = null;
+            bimestre.ciclo = ciclo;
+            await queryRunner.manager.save(bimestre);
+        }
+        await queryRunner.commitTransaction();
         return res.status(200).json({ message: "Ciclo creado exitosamente", ciclo });
     } catch (error) {
+        await queryRunner.rollbackTransaction();
         console.error("Error creando ciclo:", error);
         return res.status(500).json({ message: "Internal server error" });
+    }finally {
+        await queryRunner.release();
     }
 };
 
@@ -79,7 +99,7 @@ export const modificarCiclo = async (req: Request, res: Response): Promise<any> 
     try {
         const { id, descripcion } = req.body;
         const ciclo = await cicloRepo.findOneByOrFail({ id });
-        if(ciclo.fechaFin != null){
+        if (ciclo.fechaFin != null) {
             return res.status(400).json({ message: "Ciclo finalizado no se puede modificar", ciclo });
         }
         ciclo.descripcion = descripcion;
@@ -103,10 +123,10 @@ export const eliminarCiclo = async (req: Request, res: Response): Promise<any> =
                 gradosCiclo: true
             }
         });
-        if(ciclo.fechaFin != null){
+        if (ciclo.fechaFin != null) {
             return res.status(400).json({ message: "Ciclo finalizado no se puede eliminar", ciclo });
         }
-        if(ciclo?.gradosCiclo?.length > 0){
+        if (ciclo?.gradosCiclo?.length > 0) {
             return res.status(400).json({ message: "Ciclo tiene grados relacionados no se puede eliminar", ciclo });
         }
         await cicloRepo.softRemove(ciclo);

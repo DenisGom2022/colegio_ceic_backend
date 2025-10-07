@@ -32,7 +32,7 @@ export class Curso extends BaseEntity {
     @JoinColumn({ name: "dpi_catedratico" })
     catedratico: Catedratico;
 
-    @OneToMany(() => Bimestre, bimestre => bimestre.curso)
+    @OneToMany(() => Tarea, tarea => tarea.curso)
     tareas:Tarea[];
 
     @CreateDateColumn({ name: "created_at" })

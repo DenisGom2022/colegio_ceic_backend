@@ -7,6 +7,7 @@ import { GradoCiclo } from "../models/GradoCiclo";
 import { IsNull } from "typeorm";
 import { JwtPayload } from "../interfaces/interfaces";
 import { Catedratico } from "../models/Catedratico";
+import { Bimestre } from "../models/Bimestre";
 
 const cursoRepo = AppDataSource.getRepository(Curso);
 
@@ -60,6 +61,44 @@ export const getAllMisCursos = async (req: Request, res: Response<getAllMisCurso
     }
 };
 
+export const getAllMisCursosActivos = async (req: Request, res: Response<getAllMisCursosResponse>): Promise<any> => {
+    try {
+        const valorToken:JwtPayload = (req as any).valorToken;
+        const catedratico = await Catedratico.findOneBy({idUsuario:valorToken?.usuario?.usuario});
+        if(!catedratico){
+            return res.status(200).json({ message: "Usuario no es profesor", cursos:[], esCatedratico: false })
+        }
+
+        const cursos = await Curso.find({
+            where: {
+                gradoCiclo: {
+                    ciclo: {
+                        fechaFin: IsNull()
+                    }
+                }
+            },
+            relations: {
+                gradoCiclo: {
+                    ciclo: {
+                        bimestres: {
+                            estado: true
+                        }
+                    },
+                    grado: {
+                        nivelAcademico: true,
+                        jornada: true
+                    }
+                }
+            }
+        });
+
+        return res.status(200).json({ message: "Cursos obtenidos exitosamente", cursos, esCatedratico: true });
+    } catch (error) {
+        console.error("Error obteniendo cursos:", error);
+        return res.status(500).json({ message: "Internal server error", cursos: [], esCatedratico: false });
+    }
+};
+
 export const getMiCurso = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id }: any = req.params;
@@ -71,6 +110,8 @@ export const getMiCurso = async (req: Request, res: Response): Promise<any> => {
         const curso = await cursoRepo.createQueryBuilder("curso")
             .leftJoinAndSelect("curso.gradoCiclo", "gradoCiclo")
             .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
+            .leftJoinAndSelect("ciclo.bimestres", "bimestres")
+            .leftJoinAndSelect("bimestres.estado", "estadoBimestre")
             .leftJoinAndSelect("gradoCiclo.grado", "grado")
             .leftJoinAndSelect("grado.nivelAcademico", "nivelAcademico")
             .leftJoinAndSelect("grado.jornada", "jornada")
@@ -116,8 +157,13 @@ export const getCurso = async (req: Request, res: Response): Promise<any> => {
             relations: [
                 "gradoCiclo",
                 "gradoCiclo.ciclo",
+                "gradoCiclo.grado",
+                "gradoCiclo.grado.nivelAcademico",
+                "gradoCiclo.grado.jornada",
                 "catedratico",
-                "catedratico.usuario"
+                "catedratico.usuario",
+                "bimestres",
+                "bimestres.estado"
             ]
         });
         if (!curso) {
@@ -131,7 +177,10 @@ export const getCurso = async (req: Request, res: Response): Promise<any> => {
 };
 
 export const crearCurso = async (req: Request, res: Response): Promise<any> => {
+    const queryRunner = AppDataSource.createQueryRunner();
     try {
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
         const { nombre, notaMaxima, notaAprobada, idGrado, dpiCatedratico } = req.body;
         // Usar entidades directamente para los repositorios
         const cicloRepo = AppDataSource.getRepository(Ciclo);
@@ -156,11 +205,15 @@ export const crearCurso = async (req: Request, res: Response): Promise<any> => {
         if (cursoExistente) {
             return res.status(400).json({ message: "Ya existe un curso con ese nombre en el grado para el ciclo activo" });
         }
-        // Crear el curso usando el gradoCiclo encontrado
+
+         // Crear el curso usando el gradoCiclo encontrado
         const curso = cursoRepo.create({ nombre, notaMaxima, notaAprobada, idGradoCiclo: gradoCiclo.id, dpiCatedratico });
-        await cursoRepo.save(curso);
+        await queryRunner.manager.save(curso);
+           
+        await queryRunner.commitTransaction();
         return res.status(201).json({ message: "Curso creado exitosamente", curso });
     } catch (error:any) {
+        await queryRunner.rollbackTransaction();
         if (error instanceof QueryFailedError) {
             const { errno, sqlMessage } = error.driverError || {};
             if (errno === 1452 && sqlMessage?.includes("FK_curso_gradoCiclo")) {
@@ -169,11 +222,13 @@ export const crearCurso = async (req: Request, res: Response): Promise<any> => {
             if (errno === 1452 && sqlMessage?.includes("FK_curso_catedratico")) {
                 return res.status(404).json({ message: "El catedratico no existe" });
             }
-            console.log("Error en BD al modificar usuario: ", error);
-            return res.status(500).json({ message: "Error en BD al modificar usuario" });
+            console.log("Error en BD al crear curso: ", error);
+            return res.status(500).json({ message: "Error en BD al crear curso" });
         }
         console.error("Error creando curso:", error);
         return res.status(500).json({ message: "Internal server error" });
+    } finally {
+        await queryRunner.release();
     }
 };
 

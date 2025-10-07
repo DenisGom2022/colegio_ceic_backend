@@ -11,8 +11,8 @@ import {
     OneToMany
 } from "typeorm";
 import { EstadoBimestre } from "./EstadoBimestre";
-import { Curso } from "./Curso";
 import { Tarea } from "./Tarea";
+import { Ciclo } from "./Ciclo";
 
 @Entity({ name: "bimestre" })
 export class Bimestre extends BaseEntity {
@@ -26,13 +26,13 @@ export class Bimestre extends BaseEntity {
 	idEstado: number;
 
 	@Column({ name: "fecha_inicio", type: "datetime" })
-	fechaInicio: Date;
+	fechaInicio: Date|null;
 
 	@Column({ name: "fecha_fin", type: "datetime" })
 	fechaFin: Date;
 
-	@Column({ name: "id_curso", type: "int" })
-	idCurso: number;
+	@Column({ name: "id_ciclo", type: "int" })
+	idCiclo: number;
 
 	@CreateDateColumn({ name: "created_at", type: "datetime" })
 	createdAt: Date;
@@ -47,10 +47,10 @@ export class Bimestre extends BaseEntity {
 	@JoinColumn({ name: "id_estado" })
 	estado: EstadoBimestre;
 
-	@ManyToOne(() => Curso, { onDelete: "CASCADE", onUpdate: "CASCADE" })
-	@JoinColumn({ name: "id_curso" })
-	curso: Curso;
+	@ManyToOne(() => Ciclo, { onDelete: "CASCADE", onUpdate: "CASCADE" })
+	@JoinColumn({ name: "id_ciclo" })
+	ciclo: Ciclo;
 
-    @OneToMany(() => Tarea, tarea => tarea.curso)
+    @OneToMany(() => Tarea, tarea => tarea.bimestre)
     tareas:Tarea[];
 }

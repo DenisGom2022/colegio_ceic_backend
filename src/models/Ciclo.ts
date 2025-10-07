@@ -1,5 +1,6 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from "typeorm";
 import { GradoCiclo } from "./GradoCiclo";
+import { Bimestre } from "./Bimestre";
 
 @Entity({ name: "ciclo" })
 export class Ciclo {
@@ -15,11 +16,11 @@ export class Ciclo {
     @Column({ name: "fecha_fin", type:"date" })
     fechaFin: Date|null;
 
-    @Column({name:"cantidad_bimestre", type:"int"})
-    cantidadBimestres: number;
-
     @OneToMany(() => GradoCiclo, gradoCiclo => gradoCiclo.ciclo)
     gradosCiclo: GradoCiclo[];
+
+    @OneToMany(() => Bimestre, bimestre => bimestre.ciclo)
+    bimestres:Bimestre[];
 
     @UpdateDateColumn({ name: "updated_at" })
     updatedAt: Date;

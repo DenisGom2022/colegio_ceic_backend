@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from "typeorm";
 
-export class CreateBimestreTable1757113676727 implements MigrationInterface {
+export class CreateTableAsignacionAlumno1759771711248 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
-                name: "bimestre",
+                name: "asignacion_alumno",
                 columns: [
                     {
                         name: "id",
@@ -15,29 +15,20 @@ export class CreateBimestreTable1757113676727 implements MigrationInterface {
                         generationStrategy: "increment",
                     },
                     {
-                        name: "numero_bimestre",
+                        name: "id_grado_ciclo",
                         type: "int",
                         isNullable: false
                     },
                     {
-                        name: "id_estado",
-                        type: "int",
-                        isNullable: false
-                    },
-                    {
-                        name: "fecha_inicio",
-                        type: "datetime",
-                        isNullable: true
-                    },
-                    {
-                        name: "fecha_fin",
-                        type: "datetime",
-                        isNullable: true
-                    },
-                    {
-                        name: "id_ciclo",
-                        type: "int",
+                        name: "id_alumno",
+                        type: "nvarchar",
                         isNullable: false,
+                        length: "20"
+                    },
+                    {
+                        name: "id_estado_asignacion",
+                        type: "int",
+                        isNullable: false
                     },
                     {
                         name: "created_at",
@@ -55,45 +46,55 @@ export class CreateBimestreTable1757113676727 implements MigrationInterface {
                         type: "datetime",
                         isNullable: true,
                     },
-                ]
-            }))
+                ],
+            })
+
+        );
 
         await queryRunner.createForeignKey(
-            "bimestre",
+            "asignacion_alumno",
             new TableForeignKey({
-                columnNames: ["id_estado"],
-                referencedTableName: "cat_estado_bimestre",
+                columnNames: ["id_grado_ciclo"],
+                referencedTableName: "grado_ciclo",
                 referencedColumnNames: ["id"],
                 onDelete: "CASCADE",
-                onUpdate: "CASCADE"
+                onUpdate: "CASCADE",
+                name: "FK_asignacion_gradoCiclo"
             })
-        )
+        );
 
         await queryRunner.createForeignKey(
-            "bimestre",
+            "asignacion_alumno",
             new TableForeignKey({
-                columnNames: ["id_ciclo"],
-                referencedTableName: "ciclo",
+                columnNames: ["id_alumno"],
+                referencedTableName: "alumno",
+                referencedColumnNames: ["cui"],
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
+                name: "FK_asignacion_alumno"
+            })
+        );
+
+        await queryRunner.createForeignKey(
+            "asignacion_alumno",
+            new TableForeignKey({
+                columnNames: ["id_estado_asignacion"],
+                referencedTableName: "cat_estado_asignacion_alumno",
                 referencedColumnNames: ["id"],
                 onDelete: "CASCADE",
-                onUpdate: "CASCADE"
+                onUpdate: "CASCADE",
+                name: "FK_asignacion_estado"
             })
-        )
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        const table = await queryRunner.getTable("bimestre");
-        if (table) {
-            const foreignKeyEstado = table.foreignKeys.find(fk => fk.columnNames.indexOf("id_estado") !== -1);
-            if (foreignKeyEstado) {
-                await queryRunner.dropForeignKey("bimestre", foreignKeyEstado);
-            }
-            const foreignKeyCurso = table.foreignKeys.find(fk => fk.columnNames.indexOf("id_ciclo") !== -1);
-            if (foreignKeyCurso) {
-                await queryRunner.dropForeignKey("bimestre", foreignKeyCurso);
-            }
-        }
-        await queryRunner.dropTable("bimestre");
+        // Eliminar las foreign keys en orden inverso
+        await queryRunner.dropForeignKey("asignacion_alumno", "FK_asignacion_estado");
+        await queryRunner.dropForeignKey("asignacion_alumno", "FK_asignacion_alumno");
+        await queryRunner.dropForeignKey("asignacion_alumno", "FK_asignacion_gradoCiclo");
+        // Eliminar la tabla
+        await queryRunner.dropTable("asignacion_alumno");
     }
 
 }

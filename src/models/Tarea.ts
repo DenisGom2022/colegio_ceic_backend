@@ -19,10 +19,17 @@ export class Tarea extends BaseEntity {
 	@Column({ name:"fecha_entrega",  type: "datetime" })
 	fechaEntrega: Date;
 
-	@Column({ name:"id_curso", type: "int" })
-	idCurso: number;
+	@Column({ name:"id_bimestre", type: "int" })
+	idBimestre: number;
 
 	@ManyToOne(() => Bimestre, bimestre => bimestre.tareas, { onDelete: "CASCADE", onUpdate: "CASCADE" })
+	@JoinColumn({ name: "id_bimestre" })
+	bimestre: Bimestre;
+
+	@Column({ name: "id_curso", type: "int" })
+	idCurso: number;
+
+	@ManyToOne(() => Curso, { onDelete: "CASCADE", onUpdate: "CASCADE" })
 	@JoinColumn({ name: "id_curso" })
 	curso: Curso;
 
