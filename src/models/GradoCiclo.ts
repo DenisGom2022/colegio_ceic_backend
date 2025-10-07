@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDa
 import { Grado } from "./Grado";
 import { Ciclo } from "./Ciclo";
 import { Curso } from "./Curso";
+import { AsignacionAlumno } from "./AsignacionAlumno";
 
 @Entity({ name: "grado_ciclo" })
 export class GradoCiclo {
@@ -42,4 +43,7 @@ export class GradoCiclo {
 
     @OneToMany(() => Curso, (curso) => curso.gradoCiclo)
     cursos: Curso[];
+
+    @OneToMany(() => AsignacionAlumno, asignacion => asignacion.gradoCiclo )
+    asignacionesAlumno:AsignacionAlumno;
 }

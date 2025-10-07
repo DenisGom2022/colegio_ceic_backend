@@ -1,6 +1,7 @@
 import { BaseEntity, Entity, PrimaryColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 import { Genero } from "../utils/genero";
 import { Responsable } from "./Responsable";
+import { AsignacionAlumno } from "./AsignacionAlumno";
 
 @Entity("alumno")
 export class Alumno extends BaseEntity {
@@ -39,4 +40,7 @@ export class Alumno extends BaseEntity {
 
     @OneToMany(() => Responsable, responsable => responsable.alumno, {eager:true})
     responsables: Responsable[];
+
+    @OneToMany(() => AsignacionAlumno, asginacion => asginacion.alumno)
+    asignaciones:AsignacionAlumno;
 }
