@@ -93,7 +93,14 @@ export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> 
         
         // Crear un query builder para mayor flexibilidad
         let queryBuilder = Alumno.createQueryBuilder("alumno")
-            .leftJoinAndSelect("alumno.responsables", "responsables");
+            .leftJoinAndSelect("alumno.responsables", "responsables")
+            .leftJoinAndSelect("alumno.asignaciones", "asignaciones")
+            .leftJoinAndSelect("asignaciones.estadoAsignacion", "estadoAsignacion")
+            .leftJoinAndSelect("asignaciones.gradoCiclo", "gradoCiclo")
+            .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
+            .leftJoinAndSelect("gradoCiclo.grado", "grado")
+            .leftJoinAndSelect("grado.jornada", "jornada")
+            .leftJoinAndSelect("grado.nivelAcademico", "nivelAcademico");
             
         // Aplicar paginación solo si se proporcionaron los parámetros
         if (isPaginated) {
@@ -161,7 +168,21 @@ export const getAlumno = async (req: Request, resp: Response): Promise<any> => {
         const { cui } = req.params;
 
         // Verificar si el alumno ya existe
-        const existingAlumno = await Alumno.findOneOrFail({ where: { cui } });
+        const existingAlumno = await Alumno.findOneOrFail({ 
+            where: { cui },
+            relations: {
+                asignaciones: {
+                    estadoAsignacion: true,
+                    gradoCiclo: {
+                        ciclo: true,
+                        grado: {
+                            jornada: true,
+                            nivelAcademico: true
+                        }
+                    }
+                }
+            } 
+        });
 
         return resp.status(200).json({
             message: "Alumno encontrado exitosamente",

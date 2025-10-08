@@ -6,14 +6,15 @@ import {
 	JoinColumn,
 	CreateDateColumn,
 	UpdateDateColumn,
-	DeleteDateColumn
+	DeleteDateColumn,
+    BaseEntity
 } from "typeorm";
 import { GradoCiclo } from "./GradoCiclo";
 import { Alumno } from "./Alumno";
 import { EstadoAsignacionAlumno } from "./EstadoAsignacionAlumno";
 
 @Entity({ name: "asignacion_alumno" })
-export class AsignacionAlumno {
+export class AsignacionAlumno extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 

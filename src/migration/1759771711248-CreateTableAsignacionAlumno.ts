@@ -47,8 +47,13 @@ export class CreateTableAsignacionAlumno1759771711248 implements MigrationInterf
                         isNullable: true,
                     },
                 ],
+                uniques: [
+                    {
+                        name: "UQ_asignacion_alumno_gradoCiclo_alumno",
+                        columnNames: ["id_grado_ciclo", "id_alumno"]
+                    }
+                ]
             })
-
         );
 
         await queryRunner.createForeignKey(
