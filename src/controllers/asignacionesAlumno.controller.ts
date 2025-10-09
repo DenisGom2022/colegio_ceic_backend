@@ -5,8 +5,9 @@ import { EntityNotFoundError, QueryFailedError } from "typeorm";
 import { Grado } from "../models/Grado";
 import { GradoCiclo } from "../models/GradoCiclo";
 
+// Obtener todas las asignaciones sin paginación
 export const getAllAsignacionesAlumno = async (req:Request, res:Response):Promise<any> => {
-    try{
+    try {
         const asignaciones = await AsignacionAlumno.find({
             relations: {
                 gradoCiclo: {
@@ -20,11 +21,64 @@ export const getAllAsignacionesAlumno = async (req:Request, res:Response):Promis
                 estadoAsignacion: true
             }
         });
-
-        return res.status(200).send({ message: "Asignaciones obtenidas con exito", asignaciones });
-    }catch(error){
+        const total = asignaciones.length;
+        return res.status(200).send({
+            message: "Asignaciones obtenidas con exito",
+            asignaciones,
+            total
+        });
+    } catch(error) {
         console.log("Error al obtener asignaciones", error);
         return res.status(500).send({ message: "Error al obtener asignaciones" })
+    }
+}
+
+// Obtener asignaciones con paginación
+export const getAsignacionesAlumnoPaginado = async (req:Request, res:Response):Promise<any> => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+        const nombre = req.query.nombre as string | undefined;
+
+        // Usar queryBuilder para filtrar por nombre de alumno si se proporciona
+        const queryBuilder = AsignacionAlumno.createQueryBuilder("asignacion")
+            .leftJoinAndSelect("asignacion.gradoCiclo", "gradoCiclo")
+            .leftJoinAndSelect("gradoCiclo.grado", "grado")
+            .leftJoinAndSelect("grado.jornada", "jornada")
+            .leftJoinAndSelect("grado.nivelAcademico", "nivelAcademico")
+            .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
+            .leftJoinAndSelect("asignacion.alumno", "alumno")
+            .leftJoinAndSelect("asignacion.estadoAsignacion", "estadoAsignacion");
+
+        if (nombre) {
+            queryBuilder.andWhere(
+                `(
+                    alumno.primer_nombre LIKE :nombre OR
+                    alumno.segundo_nombre LIKE :nombre OR
+                    alumno.tercer_nombre LIKE :nombre OR
+                    alumno.primer_apellido LIKE :nombre OR
+                    alumno.segundo_apellido LIKE :nombre
+                )`,
+                { nombre: `%${nombre}%` }
+            );
+        }
+
+        queryBuilder.skip(skip).take(limit);
+
+        const [asignaciones, total] = await queryBuilder.getManyAndCount();
+        const totalPages = Math.ceil(total / limit);
+        return res.status(200).send({
+            message: "Asignaciones obtenidas con exito",
+            asignaciones,
+            total,
+            page,
+            limit,
+            totalPages
+        });
+    } catch(error) {
+        console.log("Error al obtener asignaciones paginadas", error);
+        return res.status(500).send({ message: "Error al obtener asignaciones paginadas" })
     }
 }
 
