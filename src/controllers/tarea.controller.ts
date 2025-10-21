@@ -3,8 +3,7 @@ import { Tarea } from "../models/Tarea";
 import { Curso } from "../models/Curso";
 import { JwtPayload } from "../interfaces/interfaces";
 import { ROLES } from "../utils/roles";
-import { FindOptions, FindOptionsWhere } from "typeorm";
-import { Bimestre } from "../models/Bimestre";
+import { FindOptionsWhere } from "typeorm";
 
 export const getAllTareas = async (req: Request, res: Response): Promise<any> => {
     try {
@@ -46,6 +45,9 @@ export const getAllMisTareas = async (req: Request, res: Response): Promise<any>
                         grado: {
                             nivelAcademico: true,
                             jornada: true
+                        },
+                        asignacionesAlumno:{
+                            alumno: true
                         }
                     }
                 }

@@ -46,6 +46,8 @@ export const getAllMisCursos = async (req: Request, res: Response<getAllMisCurso
         const cursos = await cursoRepo.createQueryBuilder("curso")
             .leftJoinAndSelect("curso.gradoCiclo", "gradoCiclo")
             .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
+            .leftJoinAndSelect("gradoCiclo.asignacionesAlumno", "asignacionesAlumno")
+            .leftJoinAndSelect("asignacionesAlumno.alumno", "alumno")
             .leftJoinAndSelect("gradoCiclo.grado", "grado")
             .leftJoinAndSelect("grado.jornada", "jornada")
             .leftJoinAndSelect("grado.nivelAcademico", "nivelAcademico")
@@ -109,6 +111,8 @@ export const getMiCurso = async (req: Request, res: Response): Promise<any> => {
         }
         const curso = await cursoRepo.createQueryBuilder("curso")
             .leftJoinAndSelect("curso.gradoCiclo", "gradoCiclo")
+            .leftJoinAndSelect("gradoCiclo.asignacionesAlumno", "asignacionesAlumno")
+            .leftJoinAndSelect("asignacionesAlumno.alumno", "alumno")
             .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
             .leftJoinAndSelect("ciclo.bimestres", "bimestres")
             .leftJoinAndSelect("bimestres.estado", "estadoBimestre")
