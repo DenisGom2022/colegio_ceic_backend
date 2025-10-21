@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createAsignacionAlumno, getAllAsignacionesAlumno, getAsignacionesAlumnoPaginado } from "../controllers/asignacionesAlumno.controller";
+import { createAsignacionAlumno, getAllAsignacionesAlumno, getAsignacion, getAsignacionesAlumnoPaginado } from "../controllers/asignacionesAlumno.controller";
 import { authWithRoles } from "../middlewares/auth.middleware";
 import { ROLES } from "../utils/roles";
 import { validarDatos } from "../middlewares/validator.middleware";
@@ -9,4 +9,5 @@ export const asignacionAlumnoRouter = Router();
 
 asignacionAlumnoRouter.get("/", authWithRoles([ROLES.ADMIN]), getAllAsignacionesAlumno);
 asignacionAlumnoRouter.get("/pag", authWithRoles([ROLES.ADMIN]), getAsignacionesAlumnoPaginado);
+asignacionAlumnoRouter.get("/:id", authWithRoles([ROLES.ADMIN]), getAsignacion)
 asignacionAlumnoRouter.post("/", asignacionAlumnoValidator, validarDatos, authWithRoles([ROLES.ADMIN]), createAsignacionAlumno);

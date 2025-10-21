@@ -109,6 +109,20 @@ export const createAsignacionAlumno = async (req:Request, res:Response):Promise<
             return res.status(400).send({ message: "El grado no está relacionado a un ciclo activo" });
         }
 
+        // Validar si el alumno ya está asignado a cualquier grado del ciclo activo (fechaFin == null) y la asignación está activa
+        // Se asume que el estado activo es idEstadoAsignacion = 1
+        const asignacionExistente = await AsignacionAlumno.createQueryBuilder("asignacion")
+            .leftJoin("asignacion.gradoCiclo", "gradoCiclo")
+            .leftJoin("gradoCiclo.ciclo", "ciclo")
+            .where("asignacion.idAlumno = :cuiAlumno", { cuiAlumno })
+            .andWhere("asignacion.idEstadoAsignacion = :estadoActivo", { estadoActivo: 1 })
+            .andWhere("ciclo.fechaFin IS NULL")
+            .getOne();
+
+        if (asignacionExistente) {
+            return res.status(400).send({ message: "El alumno ya está asignado a un ciclo activo con una asignación activa" });
+        }
+
         const newAsignacion = new AsignacionAlumno();
         newAsignacion.gradoCiclo = gradoCicloActivo;
         newAsignacion.idAlumno = cuiAlumno;
@@ -135,5 +149,39 @@ export const createAsignacionAlumno = async (req:Request, res:Response):Promise<
         }
         console.log("Error al crear asignacion", error);
         return res.status(500).send({ message: "Error al crear asignacion", error })
+    }
+}
+
+// Obtener una asignación por id
+export const getAsignacion = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const id = Number(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).send({ message: "ID inválido" });
+        }
+        const asignacion = await AsignacionAlumno.findOne({
+            where: { id },
+            relations: {
+                gradoCiclo: {
+                    grado: {
+                        jornada: true,
+                        nivelAcademico: true
+                    },
+                    ciclo: true
+                },
+                alumno: true,
+                estadoAsignacion: true
+            }
+        });
+        if (!asignacion) {
+            return res.status(404).send({ message: "Asignación no encontrada" });
+        }
+        return res.status(200).send({
+            message: "Asignación obtenida con exito",
+            asignacion
+        });
+    } catch (error) {
+        console.log("Error al obtener asignación", error);
+        return res.status(500).send({ message: "Error al obtener asignación" });
     }
 }
