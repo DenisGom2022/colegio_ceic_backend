@@ -7,11 +7,13 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	DeleteDateColumn,
-    BaseEntity
+	BaseEntity,
+	OneToMany
 } from "typeorm";
 import { GradoCiclo } from "./GradoCiclo";
 import { Alumno } from "./Alumno";
 import { EstadoAsignacionAlumno } from "./EstadoAsignacionAlumno";
+import { TareaAlumno } from "./TareaAlumno";
 
 @Entity({ name: "asignacion_alumno" })
 export class AsignacionAlumno extends BaseEntity {
@@ -21,6 +23,8 @@ export class AsignacionAlumno extends BaseEntity {
 	@Column({ name: "id_grado_ciclo", type: "int" })
 	idGradoCiclo: number;
 
+	@OneToMany(() => TareaAlumno, (tareaAlumno) => tareaAlumno.asignacionAlumno)
+	tareaAlumnos: TareaAlumno[];
 	@Column({ name: "id_alumno", type: "nvarchar", length: 20 })
 	idAlumno: string;
 

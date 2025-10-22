@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from "typeorm";
 import { Curso } from "./Curso";
 import { Bimestre } from "./Bimestre";
+import { TareaAlumno } from "./TareaAlumno";
 
 @Entity({ name: "tarea" })
 export class Tarea extends BaseEntity {
@@ -13,6 +14,8 @@ export class Tarea extends BaseEntity {
 	@Column({ name: "descripcion", type: "varchar", length: 255 })
 	descripcion: string;
 
+	@OneToMany(() => TareaAlumno, (tareaAlumno) => tareaAlumno.tarea)
+	tareaAlumnos: TareaAlumno[];
 	@Column({ name: "punteo" ,type: "int" })
 	punteo: number;
 
