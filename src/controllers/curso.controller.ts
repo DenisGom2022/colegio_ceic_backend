@@ -113,6 +113,8 @@ export const getMiCurso = async (req: Request, res: Response): Promise<any> => {
             .leftJoinAndSelect("curso.gradoCiclo", "gradoCiclo")
             .leftJoinAndSelect("gradoCiclo.asignacionesAlumno", "asignacionesAlumno")
             .leftJoinAndSelect("asignacionesAlumno.alumno", "alumno")
+            .leftJoinAndSelect("asignacionesAlumno.tareaAlumnos", "tareaAlumnos", "tareaAlumnos.idTarea IN (SELECT t.id FROM tarea t WHERE t.id_curso = :cursoId)", { cursoId: Number(id) })
+            .leftJoinAndSelect("tareaAlumnos.tarea", "tareaTareaAlumno")
             .leftJoinAndSelect("gradoCiclo.ciclo", "ciclo")
             .leftJoinAndSelect("ciclo.bimestres", "bimestres")
             .leftJoinAndSelect("bimestres.estado", "estadoBimestre")
