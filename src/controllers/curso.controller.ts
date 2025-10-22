@@ -165,9 +165,7 @@ export const getCurso = async (req: Request, res: Response): Promise<any> => {
                 "gradoCiclo.grado.nivelAcademico",
                 "gradoCiclo.grado.jornada",
                 "catedratico",
-                "catedratico.usuario",
-                "bimestres",
-                "bimestres.estado"
+                "catedratico.usuario"
             ]
         });
         if (!curso) {
