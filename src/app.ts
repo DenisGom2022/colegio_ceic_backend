@@ -15,6 +15,7 @@ import tipoParentescoRoute from './routes/tipoParentesco.routes';
 import { tareaRouter } from './routes/tarea.route';
 import { bimestreRouter } from './routes/bimestre.route';
 import { asignacionAlumnoRouter } from './routes/asignacionesAlumno.route';
+import { tareaAlumnoRouter } from './routes/tareaAlumno.route';
 
 
 export const app = express();
@@ -35,3 +36,4 @@ app.use("/tipo-parentesco", tipoParentescoRoute);
 app.use("/tarea", tareaRouter);
 app.use("/bimestre", bimestreRouter);
 app.use("/asignaciones-alumno", asignacionAlumnoRouter);
+app.use("/tareas-alumno", tareaAlumnoRouter);

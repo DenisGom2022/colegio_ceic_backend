@@ -11,6 +11,8 @@ export class CreateTableTareaAlumno1761084100982 implements MigrationInterface {
                         name: "id",
                         type: "int",
                         isPrimary: true,
+                        isGenerated: true,
+                        generationStrategy: "increment"
                     },
                     {
                         name: "id_tarea",
@@ -48,6 +50,12 @@ export class CreateTableTareaAlumno1761084100982 implements MigrationInterface {
                         type: "datetime",
                         isNullable: true,
                     },
+                ],
+                uniques: [
+                    {
+                        name: "UQ_tareaAlumno_idTarea_idAsignacionAlumno",
+                        columnNames: ["id_tarea", "id_asignacion_alumno"]
+                    }
                 ]
             })
         );
@@ -78,6 +86,8 @@ export class CreateTableTareaAlumno1761084100982 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        // Eliminar el índice único antes de eliminar la tabla
+        await queryRunner.dropUniqueConstraint("tarea_alumno", "UQ_tareaAlumno_idTarea_idAsignacionAlumno");
         // Eliminar las foreign keys antes de eliminar la tabla
         await queryRunner.dropForeignKey("tarea_alumno", "FK_tareaAlumno_tarea");
         await queryRunner.dropForeignKey("tarea_alumno", "FK_tareaAlumno_asignacionAlumno");
