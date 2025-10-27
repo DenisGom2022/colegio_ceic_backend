@@ -1,6 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { app } from "./app";
 import { AppDataSource } from "./config/data-source";
 import { environments } from "./utils/environments";
+
 
 const PORT = environments.PORT;
 

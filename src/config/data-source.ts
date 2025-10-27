@@ -1,21 +1,26 @@
-// src/data-source.ts
-import "reflect-metadata";
-import { DataSource } from "typeorm";
-import { TipoUsuario } from "../models/TipoUsuario";
-import { Usuario } from "../models/Usuario";
-import { environments } from "../utils/environments";
-import { env } from "process";
+// src/config/data-source.ts
+import 'dotenv/config';
+import 'reflect-metadata';
+import path from 'path';
+import { DataSource } from 'typeorm';
+
+const isTs = path.extname(__filename) === '.ts';
 
 export const AppDataSource = new DataSource({
-  type: "mysql", // o postgres/sqlite
-  host: environments.DB_HOST,
-  port: environments.DB_PORT,
-  username: environments.DB_USERNAME,
-  password: environments.DB_PASSWORD,
-  database: environments.DB_DATABASE,
+  type: 'mysql',
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
   synchronize: false,
   logging: false,
-  entities: ["src/models/*.ts"],
-  migrations: ["src/migration/*.ts"],
+  // Carga entidades y migraciones relativas al archivo compilado
+  entities: [
+    path.join(__dirname, '..', 'models', `*.${isTs ? 'ts' : 'js'}`)
+  ],
+  migrations: [
+    path.join(__dirname, '..', 'migration', `*.${isTs ? 'ts' : 'js'}`)
+  ],
   subscribers: [],
 });
