@@ -100,3 +100,20 @@ export const createTareaAlumno = async (req: Request, res: Response): Promise<an
         return res.status(500).send({ message: "Error interno del servidor" });
     }
 };
+
+export const cambiarPunteoTareaAlumno = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const { nuevoPunteo } = req.body;
+        const tareaAlumno = await TareaAlumno.findOne({ where: { id: Number(id) } });
+        if (!tareaAlumno) {
+            return res.status(404).json({ message: "Tarea de alumno no encontrada" });
+        }
+        tareaAlumno.punteoObtenido = nuevoPunteo;
+        await tareaAlumno.save();
+        return res.status(200).json({ message: "Punteo de tarea de alumno actualizado con éxito", tareaAlumno });
+    } catch (error) {
+        console.error("Error al actualizar el punteo de la tarea del alumno:", error);
+        return res.status(500).json({ message: "Error interno del servidor" });
+    }
+};

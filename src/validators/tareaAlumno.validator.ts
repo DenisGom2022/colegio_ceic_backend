@@ -14,3 +14,9 @@ export const tareaAlumnoValidator = [
     .exists().withMessage('puntoObtenido es requerido')
     .isFloat({ min: 0 }).withMessage('puntoObtenido debe ser un número positivo'),
 ];
+
+export const tareaAlumnoCambiaPunteoValidator = [
+  body('nuevoPunteo')
+    .exists().withMessage('nuevoPunteo es requerido')
+    .isFloat({ min: 0 }).withMessage('nuevoPunteo debe ser un número positivo'),
+];
