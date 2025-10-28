@@ -239,3 +239,37 @@ export const updateAsignacion = async (req: Request, res: Response): Promise<any
         return res.status(500).send({ message: "Error al actualizar asignación" });
     }
 };
+
+export const deleteAsignacion = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const id = Number(req.params.id);
+        const asignacion = await AsignacionAlumno.findOneOrFail({
+            where: { id },
+            relations: {
+                tareaAlumnos: true,
+                gradoCiclo: {
+                    ciclo: true
+                }
+            }
+        });
+
+        // Validar si la asignación tiene tareas creadas
+        if (asignacion.tareaAlumnos && asignacion.tareaAlumnos.length > 0) {
+            return res.status(400).send({ message: "No se puede eliminar la asignación porque tiene tareas asignadas" });
+        }
+
+        // Validar si el ciclo ya ha finalizado
+        if (asignacion.gradoCiclo.ciclo.fechaFin !== null) {
+            return res.status(400).send({ message: "No se puede eliminar la asignación porque el ciclo ya ha finalizado" });
+        }
+
+        await asignacion.remove();
+        return res.status(200).send({ message: "Asignación eliminada con éxito" });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            return res.status(404).send({ message: "Asignación no encontrada" });
+        } 
+        console.log("Error al eliminar asignación", error);
+        return res.status(500).send({ message: "Error al eliminar asignación" });
+    }
+};

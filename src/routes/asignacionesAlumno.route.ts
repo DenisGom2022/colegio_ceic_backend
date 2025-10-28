@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createAsignacionAlumno, getAllAsignacionesAlumno, getAsignacion, getAsignacionesAlumnoPaginado, updateAsignacion } from "../controllers/asignacionesAlumno.controller";
+import { createAsignacionAlumno, deleteAsignacion, getAllAsignacionesAlumno, getAsignacion, getAsignacionesAlumnoPaginado, updateAsignacion } from "../controllers/asignacionesAlumno.controller";
 import { authWithRoles } from "../middlewares/auth.middleware";
 import { ROLES } from "../utils/roles";
 import { validarDatos } from "../middlewares/validator.middleware";
@@ -12,3 +12,4 @@ asignacionAlumnoRouter.get("/pag", authWithRoles([ROLES.ADMIN]), getAsignaciones
 asignacionAlumnoRouter.get("/:id", authWithRoles([ROLES.ADMIN]), getAsignacion)
 asignacionAlumnoRouter.post("/", asignacionAlumnoValidator, validarDatos, authWithRoles([ROLES.ADMIN]), createAsignacionAlumno);
 asignacionAlumnoRouter.put("/:id", authWithRoles([ROLES.ADMIN]), updateAsignacionValidator, validarDatos, updateAsignacion);
+asignacionAlumnoRouter.delete("/:id", authWithRoles([ROLES.ADMIN]), deleteAsignacion);
