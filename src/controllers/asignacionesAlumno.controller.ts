@@ -185,3 +185,57 @@ export const getAsignacion = async (req: Request, res: Response): Promise<any> =
         return res.status(500).send({ message: "Error al obtener asignación" });
     }
 }
+
+export const updateAsignacion = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const id = Number(req.params.id);
+        const { idGrado } = req.body;
+        const asignacion = await AsignacionAlumno.findOneOrFail({
+            where: { id },
+            relations: {
+                gradoCiclo: {
+                    ciclo: true
+                }
+            }
+        });
+
+        // Validar si la asignación se encuentra en un ciclo activo
+        if (asignacion.gradoCiclo.ciclo.fechaFin !== null) {
+            return res.status(400).send({ message: "La asignación no pertenece a un ciclo activo, no se puede modificar" });
+        }
+
+        const grado = await Grado.findOneOrFail({
+            where: { id: idGrado },
+            relations: {
+                gradosCiclo: {
+                    ciclo: true
+                }
+            }
+        });
+        const gradoCicloActivo = grado.gradosCiclo?.find((gc: GradoCiclo) => gc.ciclo && gc.ciclo.fechaFin === null);
+
+        if (!gradoCicloActivo) {
+            return res.status(400).send({ message: "El grado no está relacionado a un ciclo activo" });
+        }
+        asignacion.gradoCiclo = gradoCicloActivo;
+        const updatedAsignacion = await asignacion.save();
+        return res.status(200).send({
+            message: "Asignación actualizada con éxito",
+            asignacion: updatedAsignacion
+        });
+    } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+            if(error.message.includes("AsignacionAlumno")) {
+                return res.status(404).send({ message: "Asignación no encontrada" });
+            }
+            return res.status(404).send({ message: "Alguna entidad no encontrada" });
+        }
+        if (error instanceof QueryFailedError) {
+            if (error.driverError.errno == 1062 && error.driverError.sqlMessage.includes("UQ_asignacion_alumno_gradoCiclo_alumno")) {
+                return res.status(400).send({ message: "El alumno ya se encuentra asignado a ese grado" });
+            }
+        }
+        console.log("Error al actualizar asignación", error);
+        return res.status(500).send({ message: "Error al actualizar asignación" });
+    }
+};
