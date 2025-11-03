@@ -85,12 +85,12 @@ export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> 
         const search = req.query.search as string || '';
         const pageParam = req.query.page as string;
         const limitParam = req.query.limit as string;
-        
+
         // Verificar si se solicitó paginación
         const isPaginated = pageParam !== undefined && limitParam !== undefined;
         const page = isPaginated ? parseInt(pageParam) || 1 : null;
         const limit = isPaginated ? parseInt(limitParam) || 10 : null;
-        
+
         // Crear un query builder para mayor flexibilidad
         let queryBuilder = Alumno.createQueryBuilder("alumno")
             .leftJoinAndSelect("alumno.responsables", "responsables")
@@ -101,7 +101,7 @@ export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> 
             .leftJoinAndSelect("gradoCiclo.grado", "grado")
             .leftJoinAndSelect("grado.jornada", "jornada")
             .leftJoinAndSelect("grado.nivelAcademico", "nivelAcademico");
-            
+
         // Aplicar paginación solo si se proporcionaron los parámetros
         if (isPaginated) {
             const skip = (page! - 1) * limit!;
@@ -115,7 +115,7 @@ export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> 
             try {
                 // Eliminar espacios múltiples del término de búsqueda y convertir a minúsculas
                 const cleanSearch = search.trim().replace(/\s+/g, ' ').toLowerCase();
-                
+
                 // Enfoque simplificado: Buscar en todos los campos relevantes
                 queryBuilder = queryBuilder.where(
                     `(LOWER(alumno.cui) LIKE :search OR 
@@ -133,7 +133,7 @@ export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> 
                       ) LIKE :search)`,
                     { search: `%${cleanSearch}%` }
                 );
-                
+
                 console.log("Query generado con éxito");
             } catch (error) {
                 console.error("Error en la búsqueda:", error);
@@ -144,12 +144,12 @@ export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> 
         const [alumnos, total] = await queryBuilder.getManyAndCount();
 
         // Construir la respuesta según si está paginada o no
-        const response: any = { 
-            message: "Alumnos encontrados", 
+        const response: any = {
+            message: "Alumnos encontrados",
             alumnos,
             total
         };
-        
+
         // Agregar información de paginación solo si se solicitó
         if (isPaginated && limit !== null) {
             response.page = page;
@@ -166,9 +166,71 @@ export const getAllAlumnos = async (req: Request, resp: Response): Promise<any> 
 export const getAlumno = async (req: Request, resp: Response): Promise<any> => {
     try {
         const { cui } = req.params;
+        // Obtener el ciclo actual (fechaFin es NULL)
+        const cicloActual = await AppDataSource.getRepository('ciclo').createQueryBuilder('ciclo')
+            .where('ciclo.fechaFin IS NULL')
+            .getOne();
+        let tareasAsignadas: any[] = [];
+        let tareasEntregadas: any[] = [];
+        if (cicloActual) {
+            // Buscar asignaciones del alumno en el ciclo actual
+            const asignaciones = await AppDataSource.getRepository('asignacion_alumno').createQueryBuilder('asignacion')
+                .leftJoinAndSelect('asignacion.gradoCiclo', 'gradoCiclo')
+                .where('asignacion.id_alumno = :cui', { cui })
+                .andWhere('gradoCiclo.id_ciclo = :idCiclo', { idCiclo: cicloActual.id })
+                .getMany();
 
-        // Verificar si el alumno ya existe
-        const existingAlumno = await Alumno.findOneOrFail({ 
+            // Obtener los gradoCiclo del ciclo actual
+            const gradoCicloIds = asignaciones.map(a => a.gradoCiclo.id);
+
+            let cursos: any[] = [];
+            let cursoIds: any[] = [];
+            if (gradoCicloIds.length === 0) {
+                tareasAsignadas = [];
+                tareasEntregadas = [];
+            } else {
+                // Buscar cursos que pertenecen a esos gradoCiclo
+                cursos = await AppDataSource.getRepository('curso').createQueryBuilder('curso')
+                    .where('curso.id_grado_ciclo IN (:...gradoCicloIds)', { gradoCicloIds })
+                    .getMany();
+                cursoIds = cursos.map(c => c.id);
+
+                if (cursoIds.length === 0) {
+                    tareasAsignadas = [];
+                } else {
+                    tareasAsignadas = await AppDataSource.getRepository('tarea')
+                        .createQueryBuilder('tarea')
+                        .leftJoin('tarea.bimestre', 'bimestre')
+                        .leftJoinAndSelect('tarea.curso', 'curso')
+                        .leftJoinAndSelect('curso.catedratico', 'catedratico')
+                        .leftJoinAndSelect('catedratico.usuario', 'usuario')
+                        .where('bimestre.id_ciclo = :idCiclo', { idCiclo: cicloActual.id })
+                        .andWhere('tarea.id_curso IN (:...cursoIds)', { cursoIds })
+                        .getMany();
+                    tareasAsignadas.forEach(tarea => {
+                        if (tarea.curso && tarea.curso.catedratico && tarea.curso.catedratico.usuario) {
+                            delete tarea.curso.catedratico.usuario.contrasena;
+                        }
+                    });
+                }
+
+                if (asignaciones.length === 0) {
+                    tareasEntregadas = [];
+                } else {
+                    tareasEntregadas = await AppDataSource.getRepository('tarea_alumno')
+                        .createQueryBuilder('ta')
+                        .leftJoinAndSelect('ta.tarea', 'tarea')
+                        .leftJoin('tarea.bimestre', 'bimestre')
+                        .where('ta.id_asignacion_alumno IN (:...asignaciones)', { asignaciones: asignaciones.map(a => a.id) })
+                        .andWhere('ta.fecha_entrega IS NOT NULL')
+                        .andWhere('bimestre.id_ciclo = :idCiclo', { idCiclo: cicloActual.id })
+                        .getMany();
+                }
+            }
+        }
+
+        // Obtener datos del alumno
+        const existingAlumno = await Alumno.findOneOrFail({
             where: { cui },
             relations: {
                 asignaciones: {
@@ -181,18 +243,20 @@ export const getAlumno = async (req: Request, resp: Response): Promise<any> => {
                         }
                     }
                 }
-            } 
+            }
         });
 
         return resp.status(200).json({
             message: "Alumno encontrado exitosamente",
-            Alumno: existingAlumno
+            Alumno: existingAlumno,
+            tareasAsignadas,
+            tareasEntregadas
         });
     } catch (error) {
         if (error instanceof EntityNotFoundError) {
             return resp.status(404).json({ message: "Alumno no encontrado" });
         }
-        console.error("Error creating alumno:", error);
+        console.error("Error creando alumno:", error);
         return resp.status(500).json({ message: "Internal server error" });
     }
 };

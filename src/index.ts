@@ -12,7 +12,7 @@ AppDataSource.initialize()
     console.log("📦 Base de datos conectada");
 
     app.listen(PORT, () => {
-      console.log("🚀 Servidor corriendo en http://localhost:3000");
+      console.log("🚀 Servidor corriendo en http://localhost:" + PORT);
     });
   })
   .catch((error:any) => console.error("Error al conectar DB:", error));
