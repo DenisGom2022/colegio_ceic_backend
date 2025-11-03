@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Pago } from "../models/Pago";
+import { AsignacionAlumno } from "../models/AsignacionAlumno";
 
 export const createPago = async (req: Request, res: Response): Promise<any> => {
     try {
@@ -11,6 +12,37 @@ export const createPago = async (req: Request, res: Response): Promise<any> => {
             mora,
             fechaPago
         } = req.body;
+
+        // Validar que la asignación existe y está en ciclo actual
+        const asignacion = await AsignacionAlumno.findOne({
+            where: { id: idAsignacionCurso },
+            relations: {
+                gradoCiclo: { ciclo: true }
+            }
+        });
+        if (!asignacion) {
+            return res.status(404).send({ message: "La asignación no existe" });
+        }
+        if (!asignacion.gradoCiclo || !asignacion.gradoCiclo.ciclo || asignacion.gradoCiclo.ciclo.fechaFin !== null) {
+            return res.status(400).send({ message: "La asignación no pertenece al ciclo actual" });
+        }
+
+        // Validar monto según tipo de pago
+        if (tipoPagoId === 1) {
+            // Tipo de pago 1: Inscripción - validar que el monto sea igual al precio de inscripción
+            if (valor != asignacion.gradoCiclo.precioInscripcion) {
+                return res.status(400).send({ 
+                    message: `El monto debe ser igual al precio de inscripción: ${asignacion.gradoCiclo.precioInscripcion}` 
+                });
+            }
+        } else if (tipoPagoId === 2) {
+            // Tipo de pago 2: Mensualidad - validar que el monto sea igual al precio de pago
+            if (valor != asignacion.gradoCiclo.precioPago) {
+                return res.status(400).send({ 
+                    message: `El monto debe ser igual al precio de pago: ${asignacion.gradoCiclo.precioPago}` 
+                });
+            }
+        }
 
         const pago = Pago.create({
             asignacionCursoId: idAsignacionCurso,
@@ -24,7 +56,12 @@ export const createPago = async (req: Request, res: Response): Promise<any> => {
         await pago.save();
 
         return res.status(200).send({ message: "Pago creado con éxito", pago });
-    } catch (error) {
+    } catch (error: any) {
+        
+        // Validar error de clave foránea tipo de pago
+        if (error.code === 'ER_NO_REFERENCED_ROW_2' && error.sqlMessage && error.sqlMessage.includes('FK_pagos_tiposPago')) {
+            return res.status(400).send({ message: "El tipo de pago no existe" });
+        }
         console.log("Error al crear pago", error);
         return res.status(500).send({ message: "Error al crear pago" });
     }
