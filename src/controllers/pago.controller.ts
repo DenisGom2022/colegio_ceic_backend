@@ -1,7 +1,6 @@
-/**
- * Crea un nuevo pago
- * Espera en el body: idAsignacionCurso, tipoPagoId, numeroPago, valor, mora, fechaPago
- */
+import { Request, Response } from "express";
+import { Pago } from "../models/Pago";
+
 export const createPago = async (req: Request, res: Response): Promise<any> => {
     try {
         const {
@@ -30,9 +29,6 @@ export const createPago = async (req: Request, res: Response): Promise<any> => {
         return res.status(500).send({ message: "Error al crear pago" });
     }
 }
-
-import { Request, Response } from "express";
-import { Pago } from "../models/Pago";
 
 export const getPagos = async (req: Request, res: Response): Promise<any> => {
     try {
