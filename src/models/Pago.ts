@@ -7,14 +7,15 @@ import {
     DeleteDateColumn,
     Unique,
     ManyToOne,
-    JoinColumn
+    JoinColumn,
+    BaseEntity
 } from "typeorm";
 import { TipoPago } from "./TipoPago";
 import { AsignacionAlumno } from "./AsignacionAlumno";
 
 @Entity({ name: "pagos" })
 @Unique("UQ_asignacion_tipoPago_numeroPago", ["asignacionCursoId", "tipoPagoId", "numeroPago"])
-export class Pago {
+export class Pago extends BaseEntity {
     @PrimaryGeneratedColumn({ name: "id", type: "int" })
     id: number;
 
