@@ -14,6 +14,7 @@ import { GradoCiclo } from "./GradoCiclo";
 import { Alumno } from "./Alumno";
 import { EstadoAsignacionAlumno } from "./EstadoAsignacionAlumno";
 import { TareaAlumno } from "./TareaAlumno";
+import { Pago } from "./Pago";
 
 @Entity({ name: "asignacion_alumno" })
 export class AsignacionAlumno extends BaseEntity {
@@ -47,6 +48,9 @@ export class AsignacionAlumno extends BaseEntity {
 	@ManyToOne(() => Alumno, (alumno) => alumno.asignaciones, { onDelete: "CASCADE", onUpdate: "CASCADE" })
 	@JoinColumn({ name: "id_alumno" })
 	alumno: Alumno;
+
+	@OneToMany(() => Pago, pago => pago.asignacionCurso)
+	pagos: Pago[];
 
 	@ManyToOne(() => EstadoAsignacionAlumno, (estado) => estado.id, { onDelete: "CASCADE", onUpdate: "CASCADE" })
 	@JoinColumn({ name: "id_estado_asignacion" })

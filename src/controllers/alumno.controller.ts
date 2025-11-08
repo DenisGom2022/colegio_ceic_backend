@@ -5,6 +5,7 @@ import { Responsable } from "../models/Responsable";
 import { EntityNotFoundError, QueryFailedError } from "typeorm";
 import { TipoParentesco } from "../models/TipoParentesco";
 import { TipoParentescoNotFoundError } from "../errors/alumno.errors";
+import { Pago } from "../models/Pago";
 
 export const crearAlumno = async (req: Request, resp: Response): Promise<any> => {
     const queryRunner = AppDataSource.createQueryRunner();
@@ -172,32 +173,26 @@ export const getAlumno = async (req: Request, resp: Response): Promise<any> => {
             .getOne();
         let tareasAsignadas: any[] = [];
         let tareasEntregadas: any[] = [];
+        let pagos: any[] = [];
+        
         if (cicloActual) {
-            // Buscar asignaciones del alumno en el ciclo actual
-            const asignaciones = await AppDataSource.getRepository('asignacion_alumno').createQueryBuilder('asignacion')
+            // Buscar la asignación única del alumno en el ciclo actual
+            const asignacion = await AppDataSource.getRepository('asignacion_alumno').createQueryBuilder('asignacion')
                 .leftJoinAndSelect('asignacion.gradoCiclo', 'gradoCiclo')
                 .where('asignacion.id_alumno = :cui', { cui })
                 .andWhere('gradoCiclo.id_ciclo = :idCiclo', { idCiclo: cicloActual.id })
-                .getMany();
+                .getOne();
 
-            // Obtener los gradoCiclo del ciclo actual
-            const gradoCicloIds = asignaciones.map(a => a.gradoCiclo.id);
-
-            let cursos: any[] = [];
-            let cursoIds: any[] = [];
-            if (gradoCicloIds.length === 0) {
-                tareasAsignadas = [];
-                tareasEntregadas = [];
-            } else {
-                // Buscar cursos que pertenecen a esos gradoCiclo
-                cursos = await AppDataSource.getRepository('curso').createQueryBuilder('curso')
-                    .where('curso.id_grado_ciclo IN (:...gradoCicloIds)', { gradoCicloIds })
+            if (asignacion) {
+                // Buscar cursos del gradoCiclo
+                const cursos = await AppDataSource.getRepository('curso').createQueryBuilder('curso')
+                    .where('curso.id_grado_ciclo = :gradoCicloId', { gradoCicloId: asignacion.gradoCiclo.id })
                     .getMany();
-                cursoIds = cursos.map(c => c.id);
+                
+                const cursoIds = cursos.map(c => c.id);
 
-                if (cursoIds.length === 0) {
-                    tareasAsignadas = [];
-                } else {
+                if (cursoIds.length > 0) {
+                    // Obtener tareas asignadas
                     tareasAsignadas = await AppDataSource.getRepository('tarea')
                         .createQueryBuilder('tarea')
                         .leftJoin('tarea.bimestre', 'bimestre')
@@ -207,6 +202,7 @@ export const getAlumno = async (req: Request, resp: Response): Promise<any> => {
                         .where('bimestre.id_ciclo = :idCiclo', { idCiclo: cicloActual.id })
                         .andWhere('tarea.id_curso IN (:...cursoIds)', { cursoIds })
                         .getMany();
+                    
                     tareasAsignadas.forEach(tarea => {
                         if (tarea.curso && tarea.curso.catedratico && tarea.curso.catedratico.usuario) {
                             delete tarea.curso.catedratico.usuario.contrasena;
@@ -214,18 +210,23 @@ export const getAlumno = async (req: Request, resp: Response): Promise<any> => {
                     });
                 }
 
-                if (asignaciones.length === 0) {
-                    tareasEntregadas = [];
-                } else {
-                    tareasEntregadas = await AppDataSource.getRepository('tarea_alumno')
-                        .createQueryBuilder('ta')
-                        .leftJoinAndSelect('ta.tarea', 'tarea')
-                        .leftJoin('tarea.bimestre', 'bimestre')
-                        .where('ta.id_asignacion_alumno IN (:...asignaciones)', { asignaciones: asignaciones.map(a => a.id) })
-                        .andWhere('ta.fecha_entrega IS NOT NULL')
-                        .andWhere('bimestre.id_ciclo = :idCiclo', { idCiclo: cicloActual.id })
-                        .getMany();
-                }
+                // Obtener tareas entregadas
+                tareasEntregadas = await AppDataSource.getRepository('tarea_alumno')
+                    .createQueryBuilder('ta')
+                    .leftJoinAndSelect('ta.tarea', 'tarea')
+                    .leftJoin('tarea.bimestre', 'bimestre')
+                    .where('ta.id_asignacion_alumno = :asignacionId', { asignacionId: asignacion.id })
+                    .andWhere('ta.fecha_entrega IS NOT NULL')
+                    .andWhere('bimestre.id_ciclo = :idCiclo', { idCiclo: cicloActual.id })
+                    .getMany();
+
+                // Obtener pagos del alumno en el ciclo actual
+                pagos = await Pago.createQueryBuilder('pago')
+                    .leftJoinAndSelect('pago.tipoPago', 'tipoPago')
+                    .leftJoinAndSelect('pago.asignacionCurso', 'asignacionCurso')
+                    .where('pago.asignacionCursoId = :asignacionId', { asignacionId: asignacion.id })
+                    .orderBy('pago.numeroPago', 'ASC')
+                    .getMany();
             }
         }
 
@@ -250,10 +251,11 @@ export const getAlumno = async (req: Request, resp: Response): Promise<any> => {
             message: "Alumno encontrado exitosamente",
             Alumno: existingAlumno,
             tareasAsignadas,
-            tareasEntregadas
+            tareasEntregadas,
+            pagos
         });
     } catch (error) {
-        if (error instanceof EntityNotFoundError) {
+        if (error instanceof EntityNotFoundError) { 
             return resp.status(404).json({ message: "Alumno no encontrado" });
         }
         console.error("Error creando alumno:", error);

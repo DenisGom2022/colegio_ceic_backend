@@ -170,7 +170,10 @@ export const getAsignacion = async (req: Request, res: Response): Promise<any> =
                     ciclo: true
                 },
                 alumno: true,
-                estadoAsignacion: true
+                estadoAsignacion: true,
+                pagos: {
+                    tipoPago: true
+                }
             }
         });
         if (!asignacion) {
