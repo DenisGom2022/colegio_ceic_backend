@@ -1,11 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from "typeorm";
 import { Grado } from "./Grado";
 import { Ciclo } from "./Ciclo";
 import { Curso } from "./Curso";
 import { AsignacionAlumno } from "./AsignacionAlumno";
+import { Servicio } from "./Servicio";
 
 @Entity({ name: "grado_ciclo" })
-export class GradoCiclo {
+export class GradoCiclo extends BaseEntity {
     @PrimaryGeneratedColumn({ name: "id" })
     id: number;
 
@@ -46,4 +47,7 @@ export class GradoCiclo {
 
     @OneToMany(() => AsignacionAlumno, asignacion => asignacion.gradoCiclo )
     asignacionesAlumno:AsignacionAlumno;
+
+    @OneToMany(() => Servicio, servicio => servicio.gradoCiclo)
+    servicios: Servicio[];
 }

@@ -89,7 +89,8 @@ export const getGrado = async (req: Request, res: Response): Promise<any> => {
                 "gradosCiclo", 
                 "gradosCiclo.ciclo", 
                 "gradosCiclo.cursos",
-                "gradosCiclo.cursos.catedratico"
+                "gradosCiclo.cursos.catedratico",
+                "gradosCiclo.servicios"
             ] 
         });
 
@@ -98,6 +99,10 @@ export const getGrado = async (req: Request, res: Response): Promise<any> => {
         const ciclosFinalizados = [];
         for (const gc of grado.gradosCiclo) {
             if (gc.ciclo && gc.ciclo.fechaFin === null) {
+                // Ordenar servicios por fecha de pago para el ciclo activo
+                if (gc.servicios && gc.servicios.length > 0) {
+                    gc.servicios.sort((a, b) => new Date(a.fecha_a_pagar).getTime() - new Date(b.fecha_a_pagar).getTime());
+                }
                 ciclosActivos.push(gc);
             } else {
                 ciclosFinalizados.push(gc);

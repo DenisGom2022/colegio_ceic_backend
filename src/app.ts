@@ -17,6 +17,7 @@ import { bimestreRouter } from './routes/bimestre.route';
 import { asignacionAlumnoRouter } from './routes/asignacionesAlumno.route';
 import { tareaAlumnoRouter } from './routes/tareaAlumno.route';
 import { pagoRouter } from './routes/pago.route';
+import { servicioRoute } from './routes/servicio.route';
 
 
 export const app = express();
@@ -39,3 +40,4 @@ app.use("/bimestre", bimestreRouter);
 app.use("/asignaciones-alumno", asignacionAlumnoRouter);
 app.use("/tareas-alumno", tareaAlumnoRouter);
 app.use("/pago", pagoRouter);
+app.use("/servicio", servicioRoute);
